@@ -18,6 +18,7 @@
 SDL_HitTestResult hitTest(SDL_Window* win, const SDL_Point* area, void* data);
 
 int main(int argc, char** argv) {
+	ShowWindow(GetConsoleWindow(), SW_HIDE);
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 	TTF_Init();
 
@@ -32,7 +33,7 @@ int main(int argc, char** argv) {
 	int winHeight = GetSystemMetrics(SM_CYSCREEN);
 	int gameStatus = 1;	// 0 : Stopped, 1 : Main screen, 2 : Menu opened
 	bool mouseDown = false;
-	int mousePos[] = { 0, };
+	int mousePos[2] = { 0, };
 	unsigned int frameStartTime;
 	int frameSleepTime = 0;
 	int handle = -1;
@@ -50,6 +51,10 @@ int main(int argc, char** argv) {
 					switch (handle % 100) {
 					case 1:
 						s->switchMenuOpen();
+						break;
+					case 4:
+						SDL_SetWindowHitTest(g->_window, NULL, mousePos);
+						gameStatus = 0;
 						break;
 					}
 					break;
@@ -71,7 +76,11 @@ int main(int argc, char** argv) {
 		if (frameSleepTime > 0)
 			SDL_Delay(frameSleepTime);
 	}
-	
+	f->~Font();
+	g->~Graphics();
+	s->~Settings();
+	TTF_Quit();
+	SDL_Quit();
 	return 0;
 }
 
@@ -80,7 +89,7 @@ SDL_HitTestResult hitTest(SDL_Window* win, const SDL_Point* area, void* data) {
 	int* pos = (int*)data;
 	short test = GetAsyncKeyState(VK_LBUTTON);
 	if (test != 0) {
-		if ((pos[1] <= 50) && (pos[0] > 34) && (pos[0] <= 400)) {
+		if ((pos[1] <= 50) && (pos[0] > 34) && (pos[0] < 366)) {
 			r = SDL_HITTEST_DRAGGABLE;
 		}
 	}

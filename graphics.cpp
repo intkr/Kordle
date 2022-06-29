@@ -19,6 +19,9 @@ Graphics::Graphics(Settings* s) {
 Graphics::~Graphics() {
 	SDL_DestroyRenderer(_renderer);
 	SDL_DestroyWindow(_window);
+	for (int i = 0; i < 5; i++) {
+		SDL_DestroyTexture(menuSprites[i]);
+	}
 }
 
 void Graphics::initSprites(int iconSize) {
@@ -132,11 +135,11 @@ void Graphics::initSprites(int iconSize) {
 	}
 
 	// Settings icon
-	SDL_Texture* teethTexture = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, iconSize, iconSize);
-	SDL_SetTextureBlendMode(teethTexture, SDL_BLENDMODE_BLEND);
+	SDL_Texture* stuffTexture = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, iconSize, iconSize);
+	SDL_SetTextureBlendMode(stuffTexture, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 0);
 	SDL_RenderFillRect(_renderer, NULL);
-	SDL_SetRenderTarget(_renderer, teethTexture);
+	SDL_SetRenderTarget(_renderer, stuffTexture);
 	SDL_SetRenderDrawColor(_renderer, white, white, white, 255);
 	stuffRect.w = 4;
 	stuffRect.h = 18;
@@ -145,11 +148,11 @@ void Graphics::initSprites(int iconSize) {
 	SDL_RenderFillRect(_renderer, &stuffRect);
 	SDL_SetRenderTarget(_renderer, menuSprites[4]);
 	for (int i = 1; i <= 3; i++) {
-		SDL_RenderCopyExF(_renderer, teethTexture, NULL, NULL, 60.0 * i, NULL, SDL_FLIP_NONE);
+		SDL_RenderCopyExF(_renderer, stuffTexture, NULL, NULL, 60.0 * i, NULL, SDL_FLIP_NONE);
 	}
 	for (int x = 0; x < iconSize; x++) {
 		for (int y = 0; y < iconSize; y++) {
-			pythagoras = ((double)y - 9.5) * ((double)y - 9.5) + ((double)x - 9.5) * ((double)x - 9.5);
+			pythagoras = (int((double)y - 9.5) * ((double)y - 9.5)) + int(((double)x - 9.5) * ((double)x - 9.5));
 			if (pythagoras <= 30 && pythagoras > 9) {
 				SDL_SetRenderDrawColor(_renderer, white, white, white, 255);
 				SDL_RenderDrawPoint(_renderer, x, y);
@@ -171,6 +174,26 @@ void Graphics::initSprites(int iconSize) {
 	SDL_RenderDrawPoint(_renderer, 15, 15);
 	SDL_RenderDrawPoint(_renderer, 4, 15);
 
+	// Close icon
+	menuRect[1].x = 366;
+	menuRect[1].y = 16;
+	menuRect[1].w = iconSize;
+	menuRect[1].h = iconSize;
+	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 0);
+	SDL_RenderFillRect(_renderer, NULL);
+	SDL_SetRenderTarget(_renderer, stuffTexture);
+	SDL_SetRenderDrawColor(_renderer, white, white, white, 255);
+	stuffRect.w = 4;
+	stuffRect.h = 20;
+	stuffRect.x = 8;
+	stuffRect.y = 0;
+	SDL_RenderFillRect(_renderer, &stuffRect);
+	SDL_SetRenderTarget(_renderer, menuSprites[1]);
+	for (int i = 1; i <= 2; i++) {
+		SDL_RenderCopyExF(_renderer, stuffTexture, NULL, NULL, 90.0 * i + 45.0, NULL, SDL_FLIP_NONE);
+	}
+
+	SDL_DestroyTexture(stuffTexture);
 	SDL_SetRenderTarget(_renderer, NULL);
 }
 
@@ -201,6 +224,9 @@ void Graphics::drawBackground(SDL_Texture* title, int iconSize) {
 
 	// Menu icon
 	SDL_RenderCopy(_renderer, menuSprites[0], NULL, &menuRect[0]);
+
+	// Close icon
+	SDL_RenderCopy(_renderer, menuSprites[1], NULL, &menuRect[1]);
 }
 
 void Graphics::drawMenu(Settings* s) {

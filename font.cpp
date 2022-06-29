@@ -9,6 +9,7 @@ Font::Font(Graphics* g) {
 
 Font::~Font() {
 	TTF_CloseFont(gameFont);
+	SDL_DestroyTexture(titleTexture);
 }
 
 SDL_Texture* Font::getTitleTexture() {

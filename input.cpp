@@ -28,6 +28,8 @@ int Input::handleClick(int btn) {
 	switch (btn) {
 	case 0:
 		return 1;
+	case 1:
+		return 4;
 	default:
 		// No buttons are pressed
 		return -1;

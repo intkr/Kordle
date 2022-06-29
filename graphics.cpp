@@ -58,7 +58,7 @@ void Graphics::initSprites(int iconSize) {
 	// Other icon position settings
 	for (int i = 2; i < 5; i++) {
 		menuRect[i] = menuRect[0];
-		menuRect[i].x += (i - 2) * 30;
+		menuRect[i].x += (i - 2) * 30 - 88;
 		menuRect[i].y *= 4;
 	}
 
@@ -160,6 +160,7 @@ void Graphics::initSprites(int iconSize) {
 			}
 		}
 	}
+		// Manual anti-aliasing
 	SDL_SetRenderDrawColor(_renderer, gray, gray, gray, 255);
 	SDL_RenderDrawPoint(_renderer, 11, 18);
 	SDL_RenderDrawPoint(_renderer, 8, 18);
@@ -175,7 +176,7 @@ void Graphics::initSprites(int iconSize) {
 
 void Graphics::renderScreen(SDL_Texture* title, Settings* s) {
 	drawBackground(title, s->getIconSize());
-	if (s->isMenuOpen()) {
+	if (s->isMenuOpen() || (!s->isMenuOpen() && s->menuAnimationNo != -1)) {
 		drawMenu(s);
 	}
 }
@@ -205,12 +206,58 @@ void Graphics::drawBackground(SDL_Texture* title, int iconSize) {
 void Graphics::drawMenu(Settings* s) {
 	if (s->menuAnimationNo == -1) {
 		// no animation
-		for (int i = 1; i < 5; i++) {
+		for (int i = 2; i <= 4; i++) {
 			SDL_RenderCopy(_renderer, menuSprites[i], NULL, &menuRect[i]);
+		}
+	}
+	else if (s->menuAnimationNo == 11) {	// Last frame
+		if (s->isMenuOpen()) {
+			// Reset x coordinates to prevent offset
+			for (int i = 2; i < 5; i++) {
+				menuRect[i].x = 14 + (i - 2) * 30;
+			}
+			s->menuAnimationNo = -1;
+		}
+		else {
+			for (int i = 2; i <= 4; i++) {
+				SDL_RenderCopy(_renderer, menuSprites[i], NULL, &menuRect[i]);
+			}
+			s->menuAnimationNo--;
+		}
+	}
+	else if (s->menuAnimationNo == 0) {		// First frame
+		if (s->isMenuOpen()) {
+			for (int i = 2; i <= 4; i++) {
+				SDL_RenderCopy(_renderer, menuSprites[i], NULL, &menuRect[i]);
+			}
+			s->menuAnimationNo++;
+		}
+		else {
+			// Reset x coordinates to prevent offset
+			for (int i = 2; i < 5; i++) {
+				menuRect[i].x = 14 + (i - 2) * 30 - 88;
+			}
+			s->menuAnimationNo = -1;
 		}
 	}
 	else {
 		// perform animations
+		if (s->isMenuOpen()) {
+			// Opening animation
+			for (int i = 2; i <= 4; i++) {
+				menuRect[i].x += 8;
+				SDL_RenderCopy(_renderer, menuSprites[i], NULL, &menuRect[i]);
+			}
+			s->menuAnimationNo++;
+		}
+		else {
+			// Closing animation
+			for (int i = 2; i <= 4; i++) {
+				menuRect[i].x -= 8;
+				SDL_RenderCopy(_renderer, menuSprites[i], NULL, &menuRect[i]);
+			}
+			s->menuAnimationNo--;
+		}
 
 	}
 }

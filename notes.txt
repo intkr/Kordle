@@ -1,5 +1,4 @@
 Todo
-	Draw menu icons
 	Make game.h and game.cpp to handle the actual game mechanics
 	---
 	Bigger screen resolution support (idk why but will do) << use a multiplier of 1.5

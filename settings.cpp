@@ -37,5 +37,14 @@ void Settings::setOpenPopup(int n) {
 }
 
 void Settings::switchMenuOpen() {
-	openMenu = !openMenu;
+	if (openMenu) {
+		openMenu = false;
+		if (menuAnimationNo == -1)
+			menuAnimationNo = 11;
+	}
+	else {
+		openMenu = true;
+		if (menuAnimationNo == -1)
+			menuAnimationNo = 0;
+	}
 }

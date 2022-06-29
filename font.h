@@ -11,6 +11,8 @@ class Font {
 public:
 	Font(Graphics* g);
 	~Font();
+
+	// Returns titleTexture.
 	SDL_Texture* getTitleTexture();
 private:
 	TTF_Font* gameFont;

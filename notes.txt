@@ -1,0 +1,33 @@
+Todo
+	Draw menu icons
+	Make game.h and game.cpp to handle the actual game mechanics
+	---
+	Bigger screen resolution support (idk why but will do) << use a multiplier of 1.5
+
+Screen
+	Screen size : 400x650 (default), maybe consider 600x975 as an option
+
+Graphics
+	menuSprites
+		0 : Menu
+		1 : Close
+		2 : Help
+		3 : Stats
+		4 : Settings
+	(menuRect exclusive)
+		5 : Close pop-up
+
+Button Codes
+	### This does not correlate to menuSprites or menuRect in graphics.h
+	### Refer to the 'Graphics' section
+   -1 : None
+    0 : Menu
+	1 : Close (Game)
+	2 : Help
+	3 : Stats
+	4 : Settings
+	5 : Close (Popup)
+
+Click handles
+   -1 : None
+	1 : Pressed menu button, switch s->openMenu

@@ -7,7 +7,7 @@ class Input {
 public:
 	// Checks which button is clicked, and returns the corresponding integer code.
 	// Refer to notes.txt for details.
-	int detectClickedButton(int pos[2], int status, SDL_Rect rects[6]);
+	int detectButton(int pos[2], int status, SDL_Rect rects[6]);
 
 	// Handles activity based on currently clicked button.
 	// Returns an integer for usage within other classes.

@@ -27,6 +27,6 @@ private:
 	void initSprites(int iconSize);
 
 	// check notes.txt
-	SDL_Texture* menuSprites[5];
-	SDL_Rect menuRect[6]; // use the sixth one for popup close buttons, set position every time one opens
+	SDL_Texture* menuSprites[6];
+	SDL_Rect menuRect[7]; // use the sixth one for popup close buttons, set position every time one opens
 };

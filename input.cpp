@@ -1,6 +1,6 @@
 #include "input.h"
 
-int Input::detectClickedButton(int pos[2], int status, SDL_Rect rects[6]) {
+int Input::detectButton(int pos[2], int status, SDL_Rect rects[6]) {
 	int btnCode = -1;
 	switch (status) {
 	case 2: // Popup
@@ -20,6 +20,9 @@ int Input::detectClickedButton(int pos[2], int status, SDL_Rect rects[6]) {
 				btnCode = i;
 			}
 		}
+		if (isMouseInRect(pos, &rects[5])) {
+			btnCode = 5;
+		}
 	}
 	return btnCode;
 }
@@ -30,6 +33,8 @@ int Input::handleClick(int btn) {
 		return 1;
 	case 1:
 		return 4;
+	case 5:
+		return 2;
 	default:
 		// No buttons are pressed
 		return -1;

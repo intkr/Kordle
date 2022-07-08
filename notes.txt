@@ -1,20 +1,48 @@
 Todo
 	Make game.h and game.cpp to handle the actual game mechanics
+		-
+	Make a pop-up system
+		- Make two SDL_Textures, one for the pop-up screen and one for the game screen
+		- Make the actual pop-up on the first one;
+		  Close icon at top right
+		  Other stuff for whatever the pop-up is about
+		- copy the first one to the center of the second one,
+		  which should have a translucent gray color to dim the stuff behind the pop-up
+		- After all above, render it on screen
+	Do stuff with menu icons
 	---
+	Design window icons
 	Bigger screen resolution support (idk why but will do) << use a multiplier of 1.5
+
+Misc notes
+	Figure out whether or not to hardcode the answers
 
 Screen
 	Screen size : 400x650 (default), maybe consider 600x975 as an option
+	boxes start at 35, 166
+	each box is 62x62
+	gaps are 5 pixels wide
+
+	Blank box / Wrong letter : 58, 58, 60 (edge of blank box has a thickness of 2 pixels)
+	Wrong spot : 174, 159, 77
+	Correct spot : 101, 139, 85
+
+Variables
+	gameStatus (main.cpp)
+		0 : Closed
+		1 : Running
+		2 : Running (Pop-up open)
 
 Graphics
 	menuSprites
 		0 : Menu
 		1 : Close
-		2 : Help
+		2 : Hint
 		3 : Stats
 		4 : Settings
+		5 : Minimize
 	(menuRect exclusive)
-		5 : Close pop-up
+		6 : Close pop-up
 
 Button Codes
 	### This does not correlate to menuSprites or menuRect in graphics.h
@@ -22,11 +50,28 @@ Button Codes
    -1 : None
     0 : Menu
 	1 : Close (Game)
-	2 : Help
+	2 : Hint
 	3 : Stats
 	4 : Settings
-	5 : Close (Popup)
+	5 : Minimize
+	6 : Close (Popup)
 
 Click handles
    -1 : None
-	1 : Pressed menu button, switch s->openMenu
+	1 : Menu button, switch s->openMenu
+	2 : Minimize button, minimize game
+	4 : Close button, close game
+
+Colors
+	0 : Gray
+	1 : Yellow
+	2 : Green
+
+data.txt
+	tries
+	playedGames
+	maxStreak
+	currentStreak
+	gamesWon[0]
+	...
+	gamesWon[5]

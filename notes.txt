@@ -15,9 +15,7 @@ Todo
 	Bigger screen resolution support (idk why but will do) << use a multiplier of 1.5
 
 Misc notes
-	
-Jamo
-	https://en.wikipedia.org/wiki/Korean_language_and_computers#Hangul_in_Unicode
+	Figure out whether or not to hardcode the answers
 
 Screen
 	Screen size : 400x650 (default), maybe consider 600x975 as an option

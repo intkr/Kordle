@@ -1,4 +1,4 @@
-#include "settings.h"
+﻿#include "settings.h"
 
 Settings::Settings() {
 	int stuff[8] = { 400, 650, 60, 20, -1, 0, -1, -1 };

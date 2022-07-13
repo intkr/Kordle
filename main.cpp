@@ -1,4 +1,4 @@
-#define SDL_MAIN_HANDLED
+﻿#define SDL_MAIN_HANDLED
 
 #include <stdio.h>
 #include <Windows.h>

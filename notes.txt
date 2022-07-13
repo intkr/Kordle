@@ -1,12 +1,12 @@
-Todo
+ï»¿Todo
 	Make game.h and game.cpp to handle the actual game mechanics
 		- Box animations (when Enter is pressed)
 			Decrease height value for both boxes and texts
 			Change box color when height is 0
 			Increase height value back to original
 		- Create an algorithm to only allow valid inputs
-			ex) Don't allow '¤£' as a initial consonant,
-			    but make it possible to input '¤¡' then '¤µ' in cases such as '¾Ç¼º' etc
+			ex) Don't allow 'ã„³' as a initial consonant,
+			    but make it possible to input 'ã„±' then 'ã……' in cases such as 'ì•…ì„±' etc
 		- Make sure vowels aren't input-able when there is no consonant to add it with
 
 	Make a pop-up system

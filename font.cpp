@@ -1,4 +1,4 @@
-#include "font.h"
+﻿#include "font.h"
 
 Font::Font(Graphics* g) {
 	gameFont = TTF_OpenFont("assets/MaruBuri-Bold.ttf", 38);

@@ -1,4 +1,4 @@
-#include "input.h"
+﻿#include "input.h"
 
 // Figures out which button was pressed based on current mouse position.
 // Hitboxes of buttons are taken from menuRect (graphics.h)

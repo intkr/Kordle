@@ -1,4 +1,4 @@
-#include "kordle.h"
+ï»¿#include "kordle.h"
 
 Kordle::Kordle() {
 	// initialize stuff to default
@@ -90,7 +90,7 @@ Kordle::Kordle() {
 
 	// Flag is activated if answer can't be initialized from the text file
 	if (flag) {
-		// resets to '¿À·ù¹ß»ı'
+		// resets to 'ì˜¤ë¥˜ë°œìƒ'
 		answer[0][0] = 11;
 		answer[0][1] = 8;
 		answer[1][0] = 5;

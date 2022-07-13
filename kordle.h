@@ -2,23 +2,29 @@
 
 #include <fstream>
 #include <string>
-#include <stdlib.h>
+#include <Windows.h>
+
+#include "font.h"
+#include "graphics.h"
 
 class Box {
 public:
-	wchar_t jamo[3];
-	unsigned short color[3];
+	short jamo[3];
+	short color[3];
 };
 
 class Kordle {
 public:
 	Kordle();
 	~Kordle();
+	void renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, int color, SDL_Texture** box);
+	void renderText(Font* f, SDL_Renderer* _renderer, SDL_Rect* dstRect, short* data);
+	void renderGame(Font* f, Graphics* g);
 
 	unsigned int tries;
 private:
 	Box input[6][4];
-	wchar_t answer[4][3];
+	unsigned short answer[4][3];
 
 	unsigned int playedGames;
 	unsigned int maxStreak;

@@ -16,6 +16,17 @@ Graphics::~Graphics() {
 	}
 }
 
+// Renders the default layout of the game screen.
+void Graphics::renderScreen(SDL_Texture* title, Settings* s) {
+	drawBackground(title, s->getIconSize());
+	if (s->isMenuOpen() || (!s->isMenuOpen() && s->menuAnimationNo != -1)) {
+		drawMenu(s);
+	}
+}
+
+
+// Draws sprites with a little bit of math and a lot of handmade anti-aliasing,
+// then saves the results in menuSprites for future use.
 void Graphics::initSprites(int iconSize) {
 
 	// Allocate space
@@ -29,8 +40,37 @@ void Graphics::initSprites(int iconSize) {
 		SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 0);
 		SDL_RenderFillRect(_renderer, NULL);
 	}
+	for (int i = 0; i < 4; i++) {
+		boxSprites[i] = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 60, 60);
+		SDL_SetRenderTarget(_renderer, boxSprites[i]);
+		SDL_SetTextureBlendMode(boxSprites[i], SDL_BLENDMODE_NONE);
+		SDL_SetRenderDrawColor(_renderer, 18, 18, 19, 255);
+		SDL_RenderFillRect(_renderer, NULL);
+	}
 
 	SDL_Rect stuffRect;
+
+	// Boxes
+	SDL_SetRenderTarget(_renderer, boxSprites[0]);
+	stuffRect.x = 1;
+	stuffRect.y = 1;
+	stuffRect.w = 58;
+	stuffRect.h = 58;
+	SDL_SetRenderDrawColor(_renderer, 58, 58, 60, 255);
+	SDL_RenderFillRect(_renderer, NULL);
+	SDL_SetRenderDrawColor(_renderer, 18, 18, 19, 255);
+	SDL_RenderFillRect(_renderer, &stuffRect);
+
+	SDL_SetRenderTarget(_renderer, boxSprites[1]);
+	SDL_RenderFillRect(_renderer, NULL);
+
+	SDL_SetRenderTarget(_renderer, boxSprites[2]);
+	SDL_SetRenderDrawColor(_renderer, 174, 159, 77, 255);
+	SDL_RenderFillRect(_renderer, NULL);
+
+	SDL_SetRenderTarget(_renderer, boxSprites[3]);
+	SDL_SetRenderDrawColor(_renderer, 101, 139, 85, 255);
+	SDL_RenderFillRect(_renderer, NULL);
 
 	// Menu icon
 	SDL_SetRenderTarget(_renderer, menuSprites[0]);
@@ -157,7 +197,7 @@ void Graphics::initSprites(int iconSize) {
 	}
 	for (int x = 0; x < iconSize; x++) {
 		for (int y = 0; y < iconSize; y++) {
-			pythagoras = (int((double)y - 9.5) * ((double)y - 9.5)) + int(((double)x - 9.5) * ((double)x - 9.5));
+			pythagoras = (int)(((double)y - 9.5) * ((double)y - 9.5)) + int(((double)x - 9.5) * ((double)x - 9.5));
 			if (pythagoras <= 30 && pythagoras > 9) {
 				SDL_SetRenderDrawColor(_renderer, WHITE, WHITE, WHITE, 255);
 				SDL_RenderDrawPoint(_renderer, x, y);
@@ -200,13 +240,6 @@ void Graphics::initSprites(int iconSize) {
 
 	SDL_DestroyTexture(stuffTexture);
 	SDL_SetRenderTarget(_renderer, NULL);
-}
-
-void Graphics::renderScreen(SDL_Texture* title, Settings* s) {
-	drawBackground(title, s->getIconSize());
-	if (s->isMenuOpen() || (!s->isMenuOpen() && s->menuAnimationNo != -1)) {
-		drawMenu(s);
-	}
 }
 
 void Graphics::drawBackground(SDL_Texture* title, int iconSize) {
@@ -298,4 +331,8 @@ void Graphics::drawMenu(Settings* s) {
 
 SDL_Rect* Graphics::getMenuRects() {
 	return menuRect;
+}
+
+SDL_Texture** Graphics::getBoxSprites() {
+	return boxSprites;
 }

@@ -1,9 +1,25 @@
 #include "settings.h"
 
 Settings::Settings() {
-	if (false) {
+	int stuff[8] = { 400, 650, 60, 20, -1, 0, -1, -1 };
+	std::wifstream wreader;
+	std::wstring wline;
+	wreader.open("assets/settings.txt", std::wifstream::in);
+	if (wreader.good()) {
 		// Apply settings from save file
+		for (int i = 0; i < _countof(stuff); i++) {
+			std::getline(wreader, wline);
+			stuff[i] = _wtoi(wline.c_str());
+		}
 	}
+	scrWidth = stuff[0];
+	scrHeight = stuff[1];
+	fps = stuff[2];
+	iconSize = stuff[3];
+	openPopup = stuff[4];
+	openMenu = stuff[5];
+	menuAnimationNo = stuff[6];
+	popupAnimationNo = stuff[7];
 }
 
 Settings::~Settings() {}
@@ -36,6 +52,8 @@ void Settings::setOpenPopup(int n) {
 	openPopup = n;
 }
 
+// Switches the boolean 'openMenu',
+// and sets the frame number for the menu moving animation.
 void Settings::switchMenuOpen() {
 	if (openMenu) {
 		openMenu = false;

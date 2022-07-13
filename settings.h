@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdio.h> // printf testing
+#include <fstream>
+#include <string>
 
 class Settings {
 public:
@@ -34,14 +36,14 @@ public:
 	// Switches the boolean value of openMenu.
 	void switchMenuOpen();
 
-	int menuAnimationNo = -1;
-	int popupAnimationNo = -1;
+	int menuAnimationNo;
+	int popupAnimationNo;
 
 private:
-	int scrWidth = 400;
-	int scrHeight = 650;
-	int fps = 60;
-	int iconSize = 20;
-	int openPopup = -1;
-	bool openMenu = false;
+	int scrWidth;
+	int scrHeight;
+	int fps;
+	int iconSize;
+	int openPopup;
+	bool openMenu;
 };

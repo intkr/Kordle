@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
 				break;
 			case SDL_MOUSEMOTION:
 				handle = i->handleClick(i->detectButton(mousePos, 0, g->getMenuRects()));
-				printf("%d\n", handle);
+				//printf("%d\n", handle);
 				switch (handle / 100) {
 				case 0:
 					if (gameStatus != 1) break;
@@ -98,6 +98,7 @@ int main(int argc, char** argv) {
 		// Rendering
 		SDL_RenderClear(g->_renderer);
 		g->renderScreen(f->getTitleTexture(), s);
+		k->renderGame(f, g);
 		SDL_RenderPresent(g->_renderer);
 
 		// FPS limiting

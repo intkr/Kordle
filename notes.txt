@@ -1,6 +1,12 @@
 Todo
 	Make game.h and game.cpp to handle the actual game mechanics
-		-
+		- Box animations (when Enter is pressed)
+			Decrease height value for both boxes and texts
+			Change box color when height is 0
+			Increase height value back to original
+
+
+
 	Make a pop-up system
 		- Make two SDL_Textures, one for the pop-up screen and one for the game screen
 		- Make the actual pop-up on the first one;
@@ -12,7 +18,10 @@ Todo
 	Do stuff with menu icons
 	---
 	Design window icons
+
 	Bigger screen resolution support (idk why but will do) << use a multiplier of 1.5
+		- Implement a multiplier for every drawn sprite, and save the multiplier in settings.txt
+		(Currently saves resolution 400x650)
 
 Misc notes
 	Figure out whether or not to hardcode the answers
@@ -20,7 +29,7 @@ Misc notes
 Screen
 	Screen size : 400x650 (default), maybe consider 600x975 as an option
 	boxes start at 35, 166
-	each box is 62x62
+	each box is 60x60
 	gaps are 5 pixels wide
 
 	Blank box / Wrong letter : 58, 58, 60 (edge of blank box has a thickness of 2 pixels)

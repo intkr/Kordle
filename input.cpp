@@ -1,11 +1,13 @@
 #include "input.h"
 
-int Input::detectButton(int pos[2], int status, SDL_Rect rects[6]) {
+// Figures out which button was pressed based on current mouse position.
+// Hitboxes of buttons are taken from menuRect (graphics.h)
+int Input::detectButton(int* pos, int status, SDL_Rect rects[7]) {
 	int btnCode = -1;
 	switch (status) {
 	case 2: // Popup
-		if (isMouseInRect(pos, &rects[5])) {
-			btnCode = 5;
+		if (isMouseInRect(pos, &rects[6])) {
+			btnCode = 6;
 		}
 		break;
 	case 1: // Menu
@@ -14,6 +16,7 @@ int Input::detectButton(int pos[2], int status, SDL_Rect rects[6]) {
 				btnCode = i;
 			}
 		}
+		if (btnCode != -1) break;
 	default: // None
 		for (int i = 0; i <= 1; i++) {
 			if (isMouseInRect(pos, &rects[i])) {
@@ -27,6 +30,8 @@ int Input::detectButton(int pos[2], int status, SDL_Rect rects[6]) {
 	return btnCode;
 }
 
+// Returns an arbitrary integer based on button presses.
+// Refer to notes.txt for more information on return values.
 int Input::handleClick(int btn) {
 	switch (btn) {
 	case 0:
@@ -41,6 +46,6 @@ int Input::handleClick(int btn) {
 	}
 }
 
-bool Input::isMouseInRect(int pos[2], SDL_Rect* rect) {
+bool Input::isMouseInRect(int* pos, SDL_Rect* rect) {
 	return (rect->w + rect->x - pos[0] > 0) && (rect->h + rect->y - pos[1] > 0) && (rect->x - pos[0] < 0) && (rect->y - pos[1] < 0);
 }

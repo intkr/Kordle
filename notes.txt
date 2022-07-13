@@ -21,6 +21,8 @@ Todo
 	---
 	Design window icons
 
+	make a readme for whatever idk stuff (im stuff)
+
 	Bigger screen resolution support (idk why but will do) << use a multiplier of 1.5
 		- Implement a multiplier for every drawn sprite, and save the multiplier in settings.txt
 		(Currently saves resolution 400x650)

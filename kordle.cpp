@@ -1,7 +1,7 @@
 #include "kordle.h"
 
 Kordle::Kordle() {
-	// initialize stuff to 0
+	// initialize stuff to default
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 6; j++) {
 			for (int k = 0; k < 3; k++) {

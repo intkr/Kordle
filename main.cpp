@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
 	unsigned int frameStartTime;
 	int frameSleepTime = 0;
 	int handle = -1;
+	int key = -1;
 	SDL_Cursor* _cursor = SDL_GetCursor();
 
 	SDL_SetWindowHitTest(g->_window, hitTest, mousePos);
@@ -48,6 +49,7 @@ int main(int argc, char** argv) {
 		frameStartTime = SDL_GetTicks();
 		while (SDL_PollEvent(&_event)) {
 			switch (_event.type) {
+			// mouse stuff
 			case SDL_MOUSEBUTTONDOWN:
 				handle = i->handleClick(i->detectButton(mousePos, 0, g->getMenuRects()));
 				switch (handle / 100) {
@@ -71,7 +73,6 @@ int main(int argc, char** argv) {
 				break;
 			case SDL_MOUSEMOTION:
 				handle = i->handleClick(i->detectButton(mousePos, 0, g->getMenuRects()));
-				//printf("%d\n", handle);
 				switch (handle / 100) {
 				case 0:
 					if (gameStatus != 1) break;
@@ -89,6 +90,21 @@ int main(int argc, char** argv) {
 						break;
 					}
 					break;
+				}
+				break;
+			// key stuff
+			case SDL_KEYDOWN:
+				key = i->handleKey(_event.key.keysym.sym, (SDL_Keymod)_event.key.keysym.mod);
+				printf("%d\n", key);
+				if (key == -1) {
+
+				}
+				else if (key >= 99) { /// should be 100 but I didn't code for Enter yet
+					// game-unrelaed keys
+				}
+				else {
+					// game-related keys
+					k->handleInput(key);
 				}
 				break;
 			}

@@ -5,6 +5,7 @@ Font::Font(Graphics* g) {
 	WHITE.r = WHITE.g = WHITE.b = WHITE.r = 255;
 
 	titleTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUTF8_Blended(gameFont, "Kordle", WHITE));
+	gameFont = TTF_OpenFont("assets/HANBatang.ttf", 38);
 	textTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUTF8_Blended(gameFont, 0, WHITE));
 }
 

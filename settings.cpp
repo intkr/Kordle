@@ -48,6 +48,7 @@ int Settings::getOpenPopup() {
 	return openPopup;
 }
 
+// Refer to notes.txt for details
 void Settings::setOpenPopup(int n) {
 	openPopup = n;
 }

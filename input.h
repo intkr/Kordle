@@ -13,6 +13,7 @@ public:
 	// Returns an integer for usage within other classes.
 	// -1 if no buttons are pressed, refer to notes.txt for other values.
 	int handleClick(int btn);
+	int handleKey(SDL_Keycode key, SDL_Keymod mod);
 
 private:
 	bool isMouseInRect(int* pos, SDL_Rect* rect);

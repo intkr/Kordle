@@ -1,12 +1,12 @@
 ﻿Todo
 	Make game.h and game.cpp to handle the actual game mechanics
+		*** Create an algorithm to only allow valid inputs
+			ex) Don't allow 'ㄳ' as a initial consonant,
+			    but make it possible to input 'ㄱ' then 'ㅅ' in cases such as '악성' etc
 		- Box animations (when Enter is pressed)
 			Decrease height value for both boxes and texts
 			Change box color when height is 0
 			Increase height value back to original
-		- Create an algorithm to only allow valid inputs
-			ex) Don't allow 'ㄳ' as a initial consonant,
-			    but make it possible to input 'ㄱ' then 'ㅅ' in cases such as '악성' etc
 		- Make sure vowels aren't input-able when there is no consonant to add it with
 
 	Make a pop-up system
@@ -18,7 +18,12 @@
 		  which should have a translucent gray color to dim the stuff behind the pop-up
 		- After all above, render it on screen
 	Do stuff with menu icons
+	Tooltip support / full keyboard support / random typing support
+	Additional support to unfortunate individiuals whose shift keys don't work lol
 	---
+	Current problems:
+		"Unused" letters (ex. 긙) are shown empty as the font doesn't support such letters
+
 	Design window icons
 
 	make a readme for whatever idk stuff (im stuff)
@@ -26,6 +31,7 @@
 	Bigger screen resolution support (idk why but will do) << use a multiplier of 1.5
 		- Implement a multiplier for every drawn sprite, and save the multiplier in settings.txt
 		(Currently saves resolution 400x650)
+		- Change SDL drawing functions to F versions so it allows subpixel precision
 
 Misc notes
 	Figure out whether or not to hardcode the answers
@@ -80,6 +86,63 @@ Colors
 	1 : Yellow
 	2 : Green
 
+Key codes
+	(default) : -1
+	ㄱ : 1
+	ㄲ : 2
+	ㄴ : 3
+	ㄷ : 4
+	ㄸ : 5
+	ㄹ : 6
+	ㅁ : 7
+	ㅂ : 8
+	ㅃ : 9
+	ㅅ : 10
+	ㅆ : 11
+	ㅇ : 12
+	ㅈ : 13
+	ㅉ : 14
+	ㅊ : 15
+	ㅋ : 16
+	ㅌ : 17
+	ㅍ : 18
+	ㅎ : 19
+	ㅏ : 20
+	ㅐ : 21
+	ㅑ : 22
+	ㅒ : 23
+	ㅓ : 24
+	ㅔ : 25
+	ㅕ : 26
+	ㅖ : 27
+	ㅗ : 28
+	ㅘ : 29
+	ㅙ : 30
+	ㅚ : 31
+	ㅛ : 32
+	ㅜ : 33
+	ㅝ : 34
+	ㅞ : 35
+	ㅟ : 36
+	ㅠ : 37
+	ㅡ : 38
+	ㅢ : 39
+	ㅣ : 40
+	ㄳ : 43
+	ㄵ : 45
+	ㄶ : 46
+	ㄺ : 49
+	ㄻ : 50
+	ㄼ : 51
+	ㄽ : 52
+	ㄾ : 53
+	ㄿ : 54
+	ㅀ : 55
+	ㅄ : 58
+	Backspace : 98
+	Enter : 99
+	Escape : 100
+
 data.txt
 	tries
 	playedGames
@@ -88,3 +151,13 @@ data.txt
 	gamesWon[0]
 	...
 	gamesWon[5]
+
+settings.txt
+	scrWidth
+	scrHeight
+	fps
+	iconSize
+	openPopup
+	openMenu
+	menuAnimationNo
+	popupAnimationNo

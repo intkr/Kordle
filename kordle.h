@@ -20,11 +20,17 @@ public:
 	void renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, int color, SDL_Texture** box);
 	void renderText(Font* f, SDL_Renderer* _renderer, SDL_Rect* dstRect, short* data);
 	void renderGame(Font* f, Graphics* g);
+	void handleInput(int key);
 
-	unsigned int tries;
 private:
-	Box input[6][4];
+	int findRK();
+	Box _input[6][4];
 	unsigned short answer[4][3];
+	short rk;
+
+	// Store the number of tries the user has used. (very confusing)
+	// 0~5 for the average gameplay, then -1 when the game ends
+	unsigned int tries;
 
 	unsigned int playedGames;
 	unsigned int maxStreak;

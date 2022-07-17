@@ -1,16 +1,17 @@
 ﻿#include "font.h"
 
 Font::Font(Graphics* g) {
-	gameFont = TTF_OpenFont("assets/MaruBuri-Bold.ttf", 38);
+	gameFont = TTF_OpenFont("assets/game.ttf", 38);
+	textFont = TTF_OpenFont("assets/text.ttf", 38);
 	WHITE.r = WHITE.g = WHITE.b = WHITE.r = 255;
 
-	titleTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUTF8_Blended(gameFont, "Kordle", WHITE));
-	gameFont = TTF_OpenFont("assets/HANBatang.ttf", 38);
+	titleTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUTF8_Blended(textFont, "Kordle", WHITE));
 	textTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUTF8_Blended(gameFont, 0, WHITE));
 }
 
 Font::~Font() {
 	TTF_CloseFont(gameFont);
+	TTF_CloseFont(textFont);
 	SDL_DestroyTexture(titleTexture);
 }
 
@@ -50,7 +51,6 @@ SDL_Texture* Font::getLetterTexture(SDL_Renderer* _renderer, short* jamo) {
 	}
 	else {
 		// Has a syllable to render
-
 		text[0] = 44032 + jamo[0] * 588 + jamo[1] * 28 + jamo[2];
 	}
 	textTexture = SDL_CreateTextureFromSurface(_renderer, TTF_RenderUNICODE_Blended(gameFont, text, WHITE));
@@ -59,15 +59,46 @@ SDL_Texture* Font::getLetterTexture(SDL_Renderer* _renderer, short* jamo) {
 
 // Returns the Unicode value for single consonant letters.
 int Font::getConsonantUNICODE(int ja) {
-	switch (ja / 6) {
+	// optimize this later
+	switch (ja) {
 	case 0:
-		return 12593 + (ja % 6) + (ja / 3) * 3 + ((ja % 6) == 2 ? 1 : 0);
+		return 12593;
 	case 1:
-		return 12609 + (ja % 6) + (ja / 3);
+		return 12594;
 	case 2:
-		return 12616 + (ja % 6);
+		return 12596;
 	case 3:
-		if (ja == 18) return 12622;
+		return 12599;
+	case 4:
+		return 12600;
+	case 5:
+		return 12601;
+	case 6:
+		return 12609;
+	case 7:
+		return 12610;
+	case 8:
+		return 12611;
+	case 9:
+		return 12613;
+	case 10:
+		return 12614;
+	case 11:
+		return 12615;
+	case 12:
+		return 12616;
+	case 13:
+		return 12617;
+	case 14:
+		return 12618;
+	case 15:
+		return 12619;
+	case 16:
+		return 12620;
+	case 17:
+		return 12621;
+	case 18:
+		return 12622;
 	}
 	return 0;
 }

@@ -22,6 +22,7 @@ public:
 	void renderGame(Font* f, Graphics* g);
 	void handleInput(int key);
 
+	bool isTypable;
 private:
 	int findRK();
 	Box _input[6][4];

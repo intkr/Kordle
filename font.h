@@ -18,6 +18,7 @@ public:
 	SDL_Texture* getLetterTexture(SDL_Renderer* _renderer, short* jamo);
 private:
 	TTF_Font* gameFont;
+	TTF_Font* textFont;
 	SDL_Texture* titleTexture;
 	SDL_Texture* textTexture;
 	SDL_Color WHITE;

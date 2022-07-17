@@ -99,12 +99,14 @@ int main(int argc, char** argv) {
 				if (key == -1) {
 
 				}
-				else if (key >= 99) { /// should be 100 but I didn't code for Enter yet
+				else if (key >= 100) { /// should be 100 but I didn't code for Enter yet
 					// game-unrelaed keys
 				}
 				else {
 					// game-related keys
-					k->handleInput(key);
+					if (k->isTypable) {
+						k->handleInput(key);
+					}
 				}
 				break;
 			}

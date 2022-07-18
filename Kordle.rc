@@ -78,7 +78,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "intkr"
-            VALUE "FileDescription", "Korean Wordle"
+            VALUE "FileDescription", "Kordle"
             VALUE "FileVersion", "0.0.0.1"
             VALUE "InternalName", "Kordle.exe"
             VALUE "LegalCopyright", "Copyright (C) 2022"

@@ -6,13 +6,12 @@ Font::Font(Graphics* g) {
 	WHITE.r = WHITE.g = WHITE.b = WHITE.r = 255;
 
 	titleTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUTF8_Blended(textFont, "Kordle", WHITE));
-	textTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUTF8_Blended(gameFont, 0, WHITE));
 }
 
 Font::~Font() {
+	SDL_DestroyTexture(titleTexture);
 	TTF_CloseFont(gameFont);
 	TTF_CloseFont(textFont);
-	SDL_DestroyTexture(titleTexture);
 }
 
 SDL_Texture* Font::getTitleTexture() {
@@ -38,8 +37,8 @@ int separateUTF8Korean(unsigned short* result, wchar_t* data) {
 // unsigned short[3] -> SDL_Texture*
 // Takes 3 numbers to get the unicode value for the corresponding Korean letter,
 // then returns a SDL_Texture* containing a render of said letter.
-SDL_Texture* Font::getLetterTexture(SDL_Renderer* _renderer, short* jamo) {
-	SDL_DestroyTexture(textTexture);
+SDL_Texture* Font::getLetterTexture(SDL_Texture* _texture, SDL_Renderer* _renderer, short* jamo) {
+	SDL_DestroyTexture(_texture);
 	Uint16 text[2] = { 0, };
 	if (jamo[0] == -1) {
 		// No character to render
@@ -53,52 +52,39 @@ SDL_Texture* Font::getLetterTexture(SDL_Renderer* _renderer, short* jamo) {
 		// Has a syllable to render
 		text[0] = 44032 + jamo[0] * 588 + jamo[1] * 28 + jamo[2];
 	}
-	textTexture = SDL_CreateTextureFromSurface(_renderer, TTF_RenderUNICODE_Blended(gameFont, text, WHITE));
-	return textTexture;
+	textSurface = TTF_RenderUNICODE_Blended(gameFont, text, WHITE);
+	_texture = SDL_CreateTextureFromSurface(_renderer, textSurface);
+	SDL_FreeSurface(textSurface);
+	return _texture;
 }
 
 // Returns the Unicode value for single consonant letters.
 int Font::getConsonantUNICODE(int ja) {
-	// optimize this later
 	switch (ja) {
 	case 0:
-		return 12593;
 	case 1:
-		return 12594;
+		return 12593 + ja;
 	case 2:
 		return 12596;
 	case 3:
-		return 12599;
 	case 4:
-		return 12600;
 	case 5:
-		return 12601;
+		return 12596 + ja;
 	case 6:
-		return 12609;
 	case 7:
-		return 12610;
 	case 8:
-		return 12611;
+		return 12603 + ja;
 	case 9:
-		return 12613;
 	case 10:
-		return 12614;
 	case 11:
-		return 12615;
 	case 12:
-		return 12616;
 	case 13:
-		return 12617;
 	case 14:
-		return 12618;
 	case 15:
-		return 12619;
 	case 16:
-		return 12620;
 	case 17:
-		return 12621;
 	case 18:
-		return 12622;
+		return 12604 + ja;
 	}
 	return 0;
 }

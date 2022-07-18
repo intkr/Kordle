@@ -15,12 +15,12 @@ public:
 
 	// Returns titleTexture.
 	SDL_Texture* getTitleTexture();
-	SDL_Texture* getLetterTexture(SDL_Renderer* _renderer, short* jamo);
+	SDL_Texture* getLetterTexture(SDL_Texture* _texture, SDL_Renderer* _renderer, short* jamo);
 private:
 	TTF_Font* gameFont;
 	TTF_Font* textFont;
+	SDL_Surface* textSurface;
 	SDL_Texture* titleTexture;
-	SDL_Texture* textTexture;
 	SDL_Color WHITE;
 
 	int getConsonantUNICODE(int ja);

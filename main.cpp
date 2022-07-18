@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 				else {
 					// game-related keys
 					if (k->isTypable) {
-						k->handleInput(key);
+						k->drawText(f, g->_renderer, k->handleInput(key));
 					}
 				}
 				break;

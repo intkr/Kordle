@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <string>
+#include <map>
 #include <Windows.h>
 
 #include "font.h"
@@ -11,28 +12,37 @@ class Box {
 public:
 	short jamo[3];
 	short color[3];
+	short aniFrame;
 };
 
 class Kordle {
 public:
 	Kordle();
 	~Kordle();
-	void renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, int color, SDL_Texture** box);
-	void renderText(Font* f, SDL_Renderer* _renderer, SDL_Rect* dstRect, short* data);
+	short renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture** box, short* data);
+	void renderText(SDL_Texture* _texture, SDL_Renderer* _renderer, SDL_Rect* dstRect, short* data, short* data2);
 	void renderGame(Font* f, Graphics* g);
-	void handleInput(int key);
+	void drawText(Font* f, SDL_Renderer* _renderer, int type);
+	int handleInput(int key);
 
 	bool isTypable;
 private:
 	int findRK();
+	void checkAnswer(int i, int j);
+	short getJamoData(short data, int type);
+
 	Box _input[6][4];
 	unsigned short answer[4][3];
+	SDL_Texture* textTexture[6][4];
+
+	// Refer to the wiki page for key values
+	// add 50 for vowels
+	std::map<short, int> answerData;
+	std::map<short, int> inputData;
+
 	short rk;
 
-	// Store the number of tries the user has used. (very confusing)
-	// 0~5 for the average gameplay, then -1 when the game ends
 	unsigned int tries;
-
 	unsigned int playedGames;
 	unsigned int maxStreak;
 	unsigned int currentStreak;
@@ -40,4 +50,6 @@ private:
 	unsigned int totalWon;
 	unsigned int winrate;
 	float avgPlacement;
+
+	const int boxAniLength = 30;
 };

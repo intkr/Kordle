@@ -9,11 +9,14 @@ Graphics::Graphics(Settings* s) {
 }
 
 Graphics::~Graphics() {
-	SDL_DestroyRenderer(_renderer);
-	SDL_DestroyWindow(_window);
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 6; i++) {
 		SDL_DestroyTexture(menuSprites[i]);
 	}
+	for (int i = 0; i < 4; i++) {
+		SDL_DestroyTexture(boxSprites[i]);
+	}
+	SDL_DestroyRenderer(_renderer);
+	SDL_DestroyWindow(_window);
 }
 
 // Renders the default layout of the game screen.
@@ -62,6 +65,7 @@ void Graphics::initSprites(int iconSize) {
 	SDL_RenderFillRect(_renderer, &stuffRect);
 
 	SDL_SetRenderTarget(_renderer, boxSprites[1]);
+	SDL_SetRenderDrawColor(_renderer, 58, 58, 60, 255);
 	SDL_RenderFillRect(_renderer, NULL);
 
 	SDL_SetRenderTarget(_renderer, boxSprites[2]);

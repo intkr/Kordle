@@ -1,4 +1,7 @@
 ﻿Todo
+	Answer check + animation
+
+	Figure out why drawing text costs 30MB
 
 	Make a pop-up system
 		- Make two SDL_Textures, one for the pop-up screen and one for the game screen
@@ -8,6 +11,7 @@
 		- copy the first one to the center of the second one,
 		  which should have a translucent gray color to dim the stuff behind the pop-up
 		- After all above, render it on screen
+
 	Do stuff with menu icons
 	Tooltip support / full keyboard support / random typing support
 	Additional support to unfortunate individiuals whose shift keys don't work lol
@@ -72,9 +76,10 @@ Click handles
 	4 : Close button, close game
 
 Colors
-	0 : Gray
-	1 : Yellow
-	2 : Green
+	0 : Default
+	1 : Gray
+	2 : Yellow
+	3 : Green
 
 Key codes
 	(default) : -1

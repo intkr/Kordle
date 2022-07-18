@@ -9,6 +9,7 @@ Kordle::Kordle() {
 				_input[j][i].color[k] = 0;
 				_input[j][i].jamo[k] = -1;
 			}
+			_input[j][i].aniFrame = -1;
 			_input[j][i].jamo[2] = 0;
 			answer[i][j / 2] = 0;
 		}
@@ -51,7 +52,7 @@ Kordle::Kordle() {
 	if (tries == 5) isTypable = false;
 	else isTypable = true;
 
-	wreader.open("assets/list.txt", std::wifstream::in);
+	wreader.open("assets/answer.csv", std::wifstream::in);
 	bool flag = false;
 	if (wreader.good()) {
 		// skip previous answers
@@ -107,16 +108,66 @@ Kordle::Kordle() {
 		answer[3][2] = 21;
 	}
 	wreader.close();
+
+	short tmp3;
+	// disgusting wack code below
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 3; j++) {
+			tmp3 = getJamoData(answer[i][j], j);
+			if (answerData.count(tmp3)) {
+				answerData[tmp3] += 1;
+			}
+			else {
+				answerData[tmp3] = 1;
+			}
+		}
+	}
 }
 
 Kordle::~Kordle() {
+	for (int i = 0; i < 6; i++) {
+		for (int j = 0; j < 4; j++) {
+			SDL_DestroyTexture(textTexture[i][j]);
+		}
+	}
+}
 
+// data + 50 if vowels
+// data + 100 if final consonant isn't valid for initial
+// convert to initial consonant value otherwise
+short Kordle::getJamoData(short data, int type) {
+	if (type == 1) return data + 50;
+	if (type == 0) return data;
+	switch (data) {
+	case 1:
+	case 2:
+		return data - 1;
+	case 4:
+	case 7:
+		return data / 2;
+	case 8:
+		return 5;
+	case 16:
+	case 17:
+	case 19:
+	case 20:
+	case 21:
+	case 22:
+	case 23:
+	case 24:
+	case 25:
+	case 26:
+	case 27:
+		return data - 10 + (data >= 23) ? 1 : 0;
+	default:
+		return data + 100;
+	}
 }
 
 // Handmade keyboard input system.
 // Very messy but it works fine and fast enough so whatever
-void Kordle::handleInput(int key) {
-	if (!isTypable) return;
+int Kordle::handleInput(int key) {
+	if (!isTypable) return false;
 	/* Steps
 	- Find the rightmost key input from findRK().
 	  (abbr. RK)
@@ -144,7 +195,7 @@ void Kordle::handleInput(int key) {
 	rk = findRK();
 	if (key == 98) {
 		// Backspace
-		if (rk == -1) return;
+		if (rk == -1) return 0;
 		switch (rk % 3) {
 		case 0:
 			_input[tries][rk / 3].jamo[rk % 3] = -1;
@@ -196,23 +247,22 @@ void Kordle::handleInput(int key) {
 			}
 			break;
 		}
-		return;
+		return -1;
 	}
 	if (key == 99) {
 		if (_input[tries][3].jamo[1] == -1) {
 			printf("Not a word");
-			return;
+			return 0;
 		}
+		_input[tries][0].aniFrame = 1;
 		tries += 1;
-		if (tries == 6) {
-			isTypable = false;
-		}
-		return;
+		isTypable = false;
+		return 0;
 	}
 	if (rk == -1) {
 		if (key < 20) {
 			_input[tries][0].jamo[0] = key - 1;
-			return;
+			return 1;
 		}
 	}
 	else if (rk != -1) {
@@ -222,6 +272,7 @@ void Kordle::handleInput(int key) {
 			if (key >= 20) {
 				// key : vowel
 				_input[tries][rk / 3].jamo[1] = key - 20;
+				return 1;
 			}
 			break;
 		case 1:
@@ -238,8 +289,10 @@ void Kordle::handleInput(int key) {
 					case 20: // ㅚ
 						_input[tries][rk / 3].jamo[1] = 11;
 						break;
+					default:
+						return 0;
 					}
-					break;
+					return 1;
 				case 13:
 					switch (key - 20) {
 					case 4: // ㅝ
@@ -249,12 +302,18 @@ void Kordle::handleInput(int key) {
 					case 20: // ㅟ
 						_input[tries][rk / 3].jamo[1] = 16;
 						break;
+					default:
+						return 0;
 					}
-					break;
+					return 1;
 				case 18:
-					if (key == 40) // ㅢ
+					if (key == 40) {// ㅢ
 						_input[tries][rk / 3].jamo[1] = 19;
-					break;
+						return 1;
+					}
+					return 0;
+				default:
+					return 0;
 				}
 			}
 			else {
@@ -289,8 +348,10 @@ void Kordle::handleInput(int key) {
 					_input[tries][rk / 3].jamo[2] = key + 8;
 					break;
 				default:
+					return 0;
 					break;
 				}
+				return 1;
 			}
 			break;
 		case 2:
@@ -361,6 +422,7 @@ void Kordle::handleInput(int key) {
 				default:
 					// shouldn't happen
 					printf_s("handleInput case 2 error : %d\n", _input[tries][rk / 3].jamo[2]);
+					return 0;
 				}
 				_input[tries][rk / 3 + 1].jamo[1] = key - 20;
 
@@ -388,83 +450,96 @@ void Kordle::handleInput(int key) {
 					// final consonants aren't combined and can simply be moved to initial consonant
 					_input[tries][rk / 3].jamo[2] = 0;
 				}
+				return 1;
 			}
 			else {
-				// key : consonant
-				bool flag = false;
-				switch (_input[tries][rk / 3].jamo[2]) {
-				case 1:
-					if (key == 10) {
-						_input[tries][rk / 3].jamo[2] = 3;
-						break;
-					}
-					else {
-						flag = true;
-						break;
-					}
+			// key : consonant
+			bool flag = false;
+			switch (_input[tries][rk / 3].jamo[2]) {
+			case 1:
+				if (key == 10) {
+					_input[tries][rk / 3].jamo[2] = 3;
 					break;
-				case 4:
-					switch (key) {
-					case 13:
-						_input[tries][rk / 3].jamo[2] = 5;
-						break;
-					case 19:
-						_input[tries][rk / 3].jamo[2] = 6;
-						break;
-					default:
-						flag = true;
-						break;
-					}
+				}
+				else {
+					flag = true;
 					break;
-				case 8:
-					switch (key) {
-					case 1:
-						_input[tries][rk / 3].jamo[2] = 9;
-						break;
-					case 7:
-					case 8:
-						_input[tries][rk / 3].jamo[2] = key + 3;
-						break;
-					case 10:
-						_input[tries][rk / 3].jamo[2] = 12;
-						break;
-					case 17:
-					case 18:
-					case 19:
-						_input[tries][rk / 3].jamo[2] = key - 4;
-						break;
-					default:
-						flag = true;
-						break;
-					}
+				}
+				break;
+			case 4:
+				switch (key) {
+				case 13:
+					_input[tries][rk / 3].jamo[2] = 5;
 					break;
-				case 17:
-					switch (key) {
-					case 10:
-						_input[tries][rk / 3].jamo[2] = 18;
-						break;
-					default:
-						flag = true;
-						break;
-					}
+				case 19:
+					_input[tries][rk / 3].jamo[2] = 6;
 					break;
 				default:
 					flag = true;
 					break;
 				}
-				if (flag) {
-					// consonants aren't combinable
-					if (rk >= 9) break;
-					_input[tries][rk / 3 + 1].jamo[0] = key - 1;
+				break;
+			case 8:
+				switch (key) {
+				case 1:
+					_input[tries][rk / 3].jamo[2] = 9;
+					break;
+				case 7:
+				case 8:
+					_input[tries][rk / 3].jamo[2] = key + 3;
+					break;
+				case 10:
+					_input[tries][rk / 3].jamo[2] = 12;
+					break;
+				case 17:
+				case 18:
+				case 19:
+					_input[tries][rk / 3].jamo[2] = key - 4;
+					break;
+				default:
+					flag = true;
+					break;
 				}
+				break;
+			case 17:
+				switch (key) {
+				case 10:
+					_input[tries][rk / 3].jamo[2] = 18;
+					break;
+				default:
+					flag = true;
+					break;
+				}
+				break;
+			default:
+				flag = true;
+				break;
 			}
-			break;
+			if (flag) {
+				// consonants aren't combinable
+				if (rk >= 9) break;
+				_input[tries][rk / 3 + 1].jamo[0] = key - 1;
+			}
+			return 1;
+			}
 		default:
 			// shouldn't happen
 			break;
 		}
 	}
-	
+	return 0;
+}
+
+void Kordle::checkAnswer(int i, int j) {
+	for (int k = 0; k < 3; k++) {
+		if (answerData.count(getJamoData(_input[i][j].jamo[k], k))) {
+			// temporary
+			_input[i][j].color[k] = 3;
+		}
+		else {
+			_input[i][j].color[k] = 1;
+		}
+	}
 }
 
 int Kordle::findRK() {
@@ -481,40 +556,121 @@ int Kordle::findRK() {
 void Kordle::renderGame(Font* f, Graphics* g) {
 	SDL_Rect boxRect;
 	short data[3];
+	short data2[2];
 	for (int i = 0; i < 6; i++) {
 		for (int j = 0; j < 4; j++) {
+			boxRect.x = 65 + j * 70;
+			data[0] = i;
+			data[1] = j;
+			for (int k = 0; k < 3; k++) {
+				boxRect.y = 100 + i * 70;
+				data[2] = k;
+				renderBox(g->_renderer, &boxRect, g->getBoxSprites(), data);
+			}
+
+			boxRect.y = 100 + i * 70;
 			for (int k = 0; k < 3; k++) {
 				data[k] = _input[i][j].jamo[k];
 			}
-			boxRect.x = 65 + j * 70;
-			boxRect.y = 100 + i * 70;
-
-			// currently only uses color[0], fix this to split into 3 rectangles
-			renderBox(g->_renderer, &boxRect, _input[i][j].color[0], g->getBoxSprites());
-			renderText(f, g->_renderer, &boxRect, data);
+			data2[0] = i, data2[1] = j;
+			renderText(textTexture[i][j], g->_renderer, &boxRect, data, data2);
 		}
 		
 	}
 }
 
-void Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, int color, SDL_Texture** box) {
-	if (false) { //  animation frame number != -1
+short Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture** box, short* data) {
+	int i = data[0], j = data[1], k = data[2];
+	dstRect->w = dstRect->h = 60;
+	if ((_input[i][j].aniFrame) != -1) { //  animation frame number != -1
+		// decrease or increase by 4 pixels per frame
+		// 3 frame difference per box
+		// stop on frame 30
+		if (_input[i][j].color[k] != 0) {
+			if ((_input[i][j].aniFrame) <= boxAniLength / 2) {
+				dstRect->h = (dstRect->h - (int)(((float)120 / boxAniLength) * (_input[i][j].aniFrame))) / 3;
+				dstRect->y += (int)(((float)60 / boxAniLength) * (_input[i][j].aniFrame)) + dstRect->h * k;
+			}
+			else {
+				dstRect->h = (dstRect->h - (int)(((float)120 / boxAniLength) * (boxAniLength - (_input[i][j].aniFrame)))) / 3;
+				dstRect->y += (int)(((float)60 / boxAniLength) * (boxAniLength - (_input[i][j].aniFrame))) + dstRect->h * k;
+			}
+		}
+		else {
+			if ((_input[i][j].aniFrame) <= boxAniLength / 2) {
+				dstRect->h -= (int)(((float)120 / boxAniLength) * (_input[i][j].aniFrame));
+				dstRect->y += (int)(((float)60 / boxAniLength) * (_input[i][j].aniFrame));
+			}
+			else {
+				dstRect->h -= (int)(((float)120 / boxAniLength) * (boxAniLength - (_input[i][j].aniFrame)));
+				dstRect->y += (int)(((float)60 / boxAniLength) * (boxAniLength - (_input[i][j].aniFrame)));
+			}
+		}
 
+		if (k == 2) {
+			(_input[i][j].aniFrame)++;
+			if ((_input[i][j].aniFrame) == (boxAniLength / 4) && j < 3) {
+				_input[i][j + 1].aniFrame = 1;
+			}
+			else if ((_input[i][j].aniFrame) == boxAniLength / 2) {
+				checkAnswer(i, j);
+			}
+			else if ((_input[i][j].aniFrame) == boxAniLength) {
+				(_input[i][j].aniFrame) = -1;
+				if (j == 3)
+					isTypable = true;
+			}
+		}
 	}
 	else {
-		dstRect->w = dstRect->h = 60;
-		SDL_RenderCopy(_renderer, box[color], NULL, dstRect);
+		if (_input[i][j].color[k] != 0) {
+			dstRect->h /= 3;
+			dstRect->y += 20 * k;
+		}
 	}
+	// i keep getting false warnings about 'j == 4' and its pissing me off
+	SDL_RenderCopy(_renderer, box[_input[i][j].color[k]], NULL, dstRect);
+	return 0;
 }
 
 // Self-explanatory.
 // x and y coordinates are the topleft corner of the box the text will be in.
 // This function automatically repositions the texture so that it looks centered.
-void Kordle::renderText(Font* f, SDL_Renderer* _renderer, SDL_Rect* dstRect, short* data) {
-	SDL_Texture* textTexture = f->getLetterTexture(_renderer, data);
+void Kordle::renderText(SDL_Texture* _texture, SDL_Renderer* _renderer, SDL_Rect* dstRect, short* data, short* data2) {
+	dstRect->w = dstRect->h = 60;
 	if (textTexture == NULL) return;
-	SDL_QueryTexture(textTexture, NULL, NULL, &(dstRect->w), &(dstRect->h));
-	dstRect->x += (60 - dstRect->w) / 2;
-	dstRect->y += (60 - dstRect->h) / 2 - 2;
-	SDL_RenderCopy(_renderer, textTexture, NULL, dstRect);
+
+	if (_input[data2[0]][data2[1]].aniFrame != -1) {
+		SDL_QueryTexture(textTexture[data2[0]][data2[1]], NULL, NULL, &(dstRect->w), &(dstRect->h));
+		dstRect->x += (60 - dstRect->w) / 2;
+		dstRect->y += (60 - dstRect->h) / 2 - 2;
+		if (_input[data2[0]][data2[1]].aniFrame <= boxAniLength / 2) {
+			dstRect->h -= (int)(((float)120 / boxAniLength) * _input[data2[0]][data2[1]].aniFrame);
+			dstRect->y += (int)(((float)60 / boxAniLength) * _input[data2[0]][data2[1]].aniFrame);
+		}
+		else {
+			dstRect->h -= (int)(((float)120 / boxAniLength) * (boxAniLength - _input[data2[0]][data2[1]].aniFrame));
+			dstRect->y += (int)(((float)60 / boxAniLength) * (boxAniLength - _input[data2[0]][data2[1]].aniFrame));
+		}
+	}
+	else {
+		SDL_QueryTexture(textTexture[data2[0]][data2[1]], NULL, NULL, &(dstRect->w), &(dstRect->h));
+		dstRect->x += (60 - dstRect->w) / 2;
+		dstRect->y += (60 - dstRect->h) / 2 - 2;
+	}
+
+	SDL_RenderCopy(_renderer, textTexture[data2[0]][data2[1]], NULL, dstRect);
+}
+
+void Kordle::drawText(Font* f, SDL_Renderer* _renderer, int type) {
+	if (!type) return;
+	int rk = findRK();
+	SDL_DestroyTexture(textTexture[tries][rk / 3]);
+	textTexture[tries][rk / 3] = f->getLetterTexture(textTexture[tries][rk / 3], _renderer, _input[tries][rk / 3].jamo);
+	if (rk >= 3 && type == 1) {
+		textTexture[tries][rk / 3 - 1] = f->getLetterTexture(textTexture[tries][rk / 3 - 1], _renderer, _input[tries][rk / 3 - 1].jamo);
+	}
+	else if (rk < 9 && type == -1) {
+		textTexture[tries][rk / 3 + 1] = f->getLetterTexture(textTexture[tries][rk / 3 + 1], _renderer, _input[tries][rk / 3 + 1].jamo);
+	}
 }

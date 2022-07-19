@@ -5,6 +5,9 @@
 #include <map>
 #include <Windows.h>
 
+#include <stdlib.h> // testing purposes
+#include <time.h>
+
 #include "font.h"
 #include "graphics.h"
 
@@ -30,10 +33,11 @@ private:
 	int findRK();
 	void checkAnswer(int i, int j);
 	short getJamoData(short data, int type);
+	void setAnswerData();
 
-	Box _input[6][4];
-	unsigned short answer[4][3];
-	SDL_Texture* textTexture[6][4];
+	Box _input[6][3];
+	unsigned short answer[3][3];
+	SDL_Texture* textTexture[6][3];
 
 	// Refer to the wiki page for key values
 	// add 50 for vowels

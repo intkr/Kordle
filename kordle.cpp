@@ -3,7 +3,7 @@
 Kordle::Kordle() {
 	rk = -1;
 	// initialize stuff to default
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 3; i++) {	// why is i and j flipped
 		for (int j = 0; j < 6; j++) {
 			for (int k = 0; k < 3; k++) {
 				_input[j][i].color[k] = 0;
@@ -32,6 +32,7 @@ Kordle::Kordle() {
 
 	tries = tmp[0];
 	playedGames = tmp[1];
+	srand(time(NULL) / 86400);
 	maxStreak = tmp[2];
 	currentStreak = tmp[3];
 	totalWon = 0;
@@ -56,7 +57,7 @@ Kordle::Kordle() {
 	bool flag = false;
 	if (wreader.good()) {
 		// skip previous answers
-		for (int i = 0; i <= (signed int)playedGames - 1; i++) {
+		for (int i = 0; i <= (signed int)(rand() % 365) - 1; i++) {
 			std::getline(wreader, wline);
 		}
 		// actual line containing today's answer
@@ -74,7 +75,7 @@ Kordle::Kordle() {
 		if (wline.size() > 0) {
 			unsigned short jamo[3];
 			wchar_t data[3];
-			for (int i = 0; i < 4; i++) {
+			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
 					data[j] = wline[i * 3 + j];
 				}
@@ -95,7 +96,7 @@ Kordle::Kordle() {
 
 	// Flag is activated if answer can't be initialized from the text file
 	if (flag) {
-		// resets to '오류발생'
+		// resets to '오류발'
 		answer[0][0] = 11;
 		answer[0][1] = 8;
 		answer[1][0] = 5;
@@ -103,25 +104,9 @@ Kordle::Kordle() {
 		answer[2][0] = 7;
 		answer[2][1] = 0;
 		answer[2][2] = 8;
-		answer[3][0] = 9;
-		answer[3][1] = 1;
-		answer[3][2] = 21;
 	}
 	wreader.close();
-
-	short tmp3;
-	// disgusting wack code below
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 3; j++) {
-			tmp3 = getJamoData(answer[i][j], j);
-			if (answerData.count(tmp3)) {
-				answerData[tmp3] += 1;
-			}
-			else {
-				answerData[tmp3] = 1;
-			}
-		}
-	}
+	setAnswerData();
 }
 
 Kordle::~Kordle() {
@@ -161,6 +146,21 @@ short Kordle::getJamoData(short data, int type) {
 		return data - 10 + (data >= 23) ? 1 : 0;
 	default:
 		return data + 100;
+	}
+}
+
+void Kordle::setAnswerData() {
+	short tmp;
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			tmp = getJamoData(answer[i][j], j);
+			if (answerData.count(tmp)) {
+				answerData[tmp] += 1;
+			}
+			else {
+				answerData[tmp] = 1;
+			}
+		}
 	}
 }
 
@@ -250,7 +250,7 @@ int Kordle::handleInput(int key) {
 		return -1;
 	}
 	if (key == 99) {
-		if (_input[tries][3].jamo[1] == -1) {
+		if (_input[tries][2].jamo[1] == -1) {
 			printf("Not a word");
 			return 0;
 		}
@@ -347,6 +347,12 @@ int Kordle::handleInput(int key) {
 				case 19:
 					_input[tries][rk / 3].jamo[2] = key + 8;
 					break;
+				case 5:
+				case 9:
+				case 14:
+					if (rk >= 6) return 0;
+					_input[tries][rk / 3 + 1].jamo[0] = key - 1;
+					break;
 				default:
 					return 0;
 					break;
@@ -358,7 +364,7 @@ int Kordle::handleInput(int key) {
 			// final consonant
 			if (key >= 20) {
 				// key : vowel
-				if (rk >= 9) break; // input is on last box, no room for more
+				if (rk >= 6) break; // input is on last box, no room for more
 				switch (_input[tries][rk / 3].jamo[2]) {
 				case 1:
 				case 9:
@@ -517,7 +523,7 @@ int Kordle::handleInput(int key) {
 			}
 			if (flag) {
 				// consonants aren't combinable
-				if (rk >= 9) break;
+				if (rk >= 6) break;
 				_input[tries][rk / 3 + 1].jamo[0] = key - 1;
 			}
 			return 1;
@@ -534,7 +540,19 @@ void Kordle::checkAnswer(int i, int j) {
 	for (int k = 0; k < 3; k++) {
 		if (answerData.count(getJamoData(_input[i][j].jamo[k], k))) {
 			// temporary
-			_input[i][j].color[k] = 3;
+			if (_input[i][j].jamo[k] == answer[j][k]) {
+				_input[i][j].color[k] = 3;
+				answerData[getJamoData(_input[i][j].jamo[k], k)] -= 1;
+			}
+			else {
+				if (answerData[getJamoData(_input[i][j].jamo[k], k)] > 0) {
+					_input[i][j].color[k] = 2;
+					answerData[getJamoData(_input[i][j].jamo[k], k)] -= 1;
+				}
+				else {
+					_input[i][j].color[k] = 1;
+				}
+			}
 		}
 		else {
 			_input[i][j].color[k] = 1;
@@ -543,7 +561,7 @@ void Kordle::checkAnswer(int i, int j) {
 }
 
 int Kordle::findRK() {
-	for (int i = 3; i >= 0; i--) {
+	for (int i = 2; i >= 0; i--) {
 		for (int j = 2; j >= 0; j--) {
 			if (_input[tries][i].jamo[j] != (-1 + (j == 2))) {
 				return i * 3 + j;
@@ -558,8 +576,8 @@ void Kordle::renderGame(Font* f, Graphics* g) {
 	short data[3];
 	short data2[2];
 	for (int i = 0; i < 6; i++) {
-		for (int j = 0; j < 4; j++) {
-			boxRect.x = 65 + j * 70;
+		for (int j = 0; j < 3; j++) {
+			boxRect.x = 100 + j * 70;
 			data[0] = i;
 			data[1] = j;
 			for (int k = 0; k < 3; k++) {
@@ -609,7 +627,7 @@ short Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture*
 
 		if (k == 2) {
 			(_input[i][j].aniFrame)++;
-			if ((_input[i][j].aniFrame) == (boxAniLength / 4) && j < 3) {
+			if ((_input[i][j].aniFrame) == (boxAniLength / 4) && j < 2) {
 				_input[i][j + 1].aniFrame = 1;
 			}
 			else if ((_input[i][j].aniFrame) == boxAniLength / 2) {
@@ -617,8 +635,10 @@ short Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture*
 			}
 			else if ((_input[i][j].aniFrame) == boxAniLength) {
 				(_input[i][j].aniFrame) = -1;
-				if (j == 3)
+				if (j == 2) {
 					isTypable = true;
+					setAnswerData();
+				}
 			}
 		}
 	}

@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <stdio.h>
 #include <string>
 
 #include "SDL.h"
@@ -13,7 +12,6 @@ public:
 	Font(Graphics* g);
 	~Font();
 
-	// Returns titleTexture.
 	SDL_Texture* getTitleTexture();
 	SDL_Texture* getLetterTexture(SDL_Texture* _texture, SDL_Renderer* _renderer, short* jamo);
 private:
@@ -27,3 +25,4 @@ private:
 };
 
 int separateUTF8Korean(unsigned short* result, wchar_t* data);
+std::wstring combineJamo(unsigned short* data);

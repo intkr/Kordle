@@ -2,6 +2,7 @@
 
 Kordle::Kordle() {
 	rk = -1;
+	foundAnswer = false;
 	// initialize stuff to default
 	for (int i = 0; i < 3; i++) {	// why is i and j flipped
 		for (int j = 0; j < 6; j++) {
@@ -18,6 +19,12 @@ Kordle::Kordle() {
 	std::wifstream wreader;
 	std::wstring wline;
 
+	wreader.open("assets/list.csv", std::wifstream::in);
+	while (wreader.good()) {
+		std::getline(wreader, wline);
+		wordList.insert(wline);
+	}
+
 	wreader.open("assets/data.txt", std::wifstream::in);
 	if (wreader.good()) {
 		for (int i = 0; i < _countof(tmp); i++) {
@@ -32,7 +39,7 @@ Kordle::Kordle() {
 
 	tries = tmp[0];
 	playedGames = tmp[1];
-	srand(time(NULL) / 86400);
+	srand((unsigned int)time(NULL) / 86400);
 	maxStreak = tmp[2];
 	currentStreak = tmp[3];
 	totalWon = 0;
@@ -57,7 +64,8 @@ Kordle::Kordle() {
 	bool flag = false;
 	if (wreader.good()) {
 		// skip previous answers
-		for (int i = 0; i <= (signed int)(rand() % 365) - 1; i++) {
+		// (signed int)(rand() % 365) - 1
+		for (int i = 0; i <= 0 - 1; i++) {
 			std::getline(wreader, wline);
 		}
 		// actual line containing today's answer
@@ -117,9 +125,10 @@ Kordle::~Kordle() {
 	}
 }
 
-// data + 50 if vowels
-// data + 100 if final consonant isn't valid for initial
-// convert to initial consonant value otherwise
+// Returns a number corresponding to a character.
+//
+// * Adds an extra 50 for vowels
+// * Adds an extra 100 if a final consonant isn't valid for initial ones (ex. ㄳ)
 short Kordle::getJamoData(short data, int type) {
 	if (type == 1) return data + 50;
 	if (type == 0) return data;
@@ -143,14 +152,17 @@ short Kordle::getJamoData(short data, int type) {
 	case 25:
 	case 26:
 	case 27:
-		return data - 10 + (data >= 23) ? 1 : 0;
+		return data - 10 + ((data >= 23) ? 1 : 0);
 	default:
 		return data + 100;
 	}
 }
 
+// Saves jamo data of today's answer in answerData.
+// Data is obtained through getJamoData().
 void Kordle::setAnswerData() {
 	short tmp;
+	answerData.clear();
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			tmp = getJamoData(answer[i][j], j);
@@ -164,8 +176,27 @@ void Kordle::setAnswerData() {
 	}
 }
 
-// Handmade keyboard input system.
-// Very messy but it works fine and fast enough so whatever
+// Converts jamo data of an input into wstring,
+// then checks if the string is in wordList.
+bool Kordle::validateAnswer() {
+	unsigned short charline[9];
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			charline[i * 3 + j] = _input[tries][i].jamo[j];
+		}
+	}
+	std::wstring wline = combineJamo(charline);
+	if (wordList.find(wline) != wordList.end()) {
+		return true;
+	}
+	return false;
+}
+
+// Custom keyboard input system.
+// Return value decides the input texture update procedure;
+//  0 : No updates
+//  1 : Forward direction update (character inputs)
+// -1 : Backward direction update (backspace input)
 int Kordle::handleInput(int key) {
 	if (!isTypable) return false;
 	/* Steps
@@ -251,12 +282,18 @@ int Kordle::handleInput(int key) {
 	}
 	if (key == 99) {
 		if (_input[tries][2].jamo[1] == -1) {
-			printf("Not a word");
+			printf("Not a word\n");
 			return 0;
 		}
-		_input[tries][0].aniFrame = 1;
-		tries += 1;
-		isTypable = false;
+		if (validateAnswer()) {
+			checkAnswer();
+			_input[tries][0].aniFrame = 1;
+			tries += 1;
+			isTypable = false;
+		}
+		else {
+			printf("Not a word\n");
+		}
 		return 0;
 	}
 	if (rk == -1) {
@@ -536,30 +573,187 @@ int Kordle::handleInput(int key) {
 	return 0;
 }
 
-void Kordle::checkAnswer(int i, int j) {
-	for (int k = 0; k < 3; k++) {
-		if (answerData.count(getJamoData(_input[i][j].jamo[k], k))) {
-			// temporary
-			if (_input[i][j].jamo[k] == answer[j][k]) {
-				_input[i][j].color[k] = 3;
-				answerData[getJamoData(_input[i][j].jamo[k], k)] -= 1;
-			}
-			else {
-				if (answerData[getJamoData(_input[i][j].jamo[k], k)] > 0) {
-					_input[i][j].color[k] = 2;
-					answerData[getJamoData(_input[i][j].jamo[k], k)] -= 1;
-				}
-				else {
-					_input[i][j].color[k] = 1;
+void Kordle::checkAnswer() {
+	short tmp;
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			tmpColor[i][j] = 0;
+		}
+	}
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			tmp = getJamoData(_input[tries][i].jamo[j], j);
+
+			if (answerData.count(tmp)) {
+				if (_input[tries][i].jamo[j] == answer[i][j]) {
+					// Green
+					tmpColor[i][j] = 4;
+					answerData[tmp] -= 1;
 				}
 			}
 		}
-		else {
-			_input[i][j].color[k] = 1;
+	}
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			if (tmpColor[i][j] == 4) continue;
+			tmp = getJamoData(_input[tries][i].jamo[j], j);
+
+			if (answerData[tmp] > 0) {
+				if (_input[tries][i].jamo[j] != answer[i][j]) {
+					// Yellow
+					tmpColor[i][j] = 2;
+					answerData[tmp] -= 1;
+				}
+				else {
+					// Green; shouldn't happen
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			if (tmpColor[i][j] == 4 || tmpColor[i][j] == 2) continue;
+			if (checkCombinedJamo(i, j)) {
+				// Olive
+				if (answerData[tmp] > 0) {
+					tmpColor[i][j] = 3;
+				}
+				else {
+					tmpColor[i][j] = 1;
+				}
+			}
+			else {
+				// Gray
+				tmpColor[i][j] = 1;
+			}
 		}
 	}
 }
 
+void Kordle::checkAnswerFound() {
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			if (tmpColor[i][j] != 4) {
+				return;
+			}
+		}
+	}
+	foundAnswer = true;
+}
+bool Kordle::checkCombinedJamo(int i, int j) {
+	short tmp = _input[tries][i].jamo[j];
+	switch (j) {
+	case 0:
+		return false;
+	case 1:
+		// vowel
+		switch (answer[i][j]) {
+		case 9:
+			if (tmp == 0 || tmp == 8)
+				return true;
+			else
+				return false;
+		case 10:
+			if (tmp == 1 || tmp == 8)
+				return true;
+			else
+				return false;
+		case 11:
+			if (tmp == 20 || tmp == 8)
+				return true;
+			else
+				return false;
+		case 14:
+			if (tmp == 4 || tmp == 13)
+				return true;
+			else
+				return false;
+		case 15:
+			if (tmp == 5 || tmp == 13)
+				return true;
+			else
+				return false;
+		case 16:
+			if (tmp == 20 || tmp == 13)
+				return true;
+			else
+				return false;
+		case 19:
+			if (tmp == 20 || tmp == 18)
+				return true;
+			else
+				return false;
+		default:
+			return false;
+		}
+		return false;
+	case 2:
+		// final consonant
+		switch (answer[i][j]) {
+		case 3:
+			if (tmp == 1 || tmp == 19)
+				return true;
+			else
+				return false;
+		case 5:
+			if (tmp == 4 || tmp == 22)
+				return true;
+			else
+				return false;
+		case 9:
+			if (tmp == 1 || tmp == 8)
+				return true;
+			else
+				return false;
+		case 10:
+			if (tmp == 16 || tmp == 8)
+				return true;
+			else
+				return false;
+		case 11:
+			if (tmp == 17 || tmp == 8)
+				return true;
+			else
+				return false;
+		case 12:
+			if (tmp == 19 || tmp == 8)
+				return true;
+			else
+				return false;
+		case 13:
+			if (tmp == 25 || tmp == 8)
+				return true;
+			else
+				return false;
+		case 14:
+			if (tmp == 26 || tmp == 8)
+				return true;
+			else
+				return false;
+		case 15:
+			if (tmp == 27 || tmp == 8)
+				return true;
+			else
+				return false;
+		case 18:
+			if (tmp == 17 || tmp == 19)
+				return true;
+			else
+				return false;
+		default:
+			return false;
+		}
+	default:
+		// shouldn't happen
+		return false;
+	}
+}
+
+// returns the position of the last jamo character stored in _input.
+// If the last jamo is in _input[0][2].jamo[1], return value is 2 * 3 + 1 = 7.
 int Kordle::findRK() {
 	for (int i = 2; i >= 0; i--) {
 		for (int j = 2; j >= 0; j--) {
@@ -600,44 +794,79 @@ void Kordle::renderGame(Font* f, Graphics* g) {
 short Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture** box, short* data) {
 	int i = data[0], j = data[1], k = data[2];
 	dstRect->w = dstRect->h = 60;
-	if ((_input[i][j].aniFrame) != -1) { //  animation frame number != -1
-		// decrease or increase by 4 pixels per frame
-		// 3 frame difference per box
-		// stop on frame 30
-		if (_input[i][j].color[k] != 0) {
-			if ((_input[i][j].aniFrame) <= boxAniLength / 2) {
-				dstRect->h = (dstRect->h - (int)(((float)120 / boxAniLength) * (_input[i][j].aniFrame))) / 3;
-				dstRect->y += (int)(((float)60 / boxAniLength) * (_input[i][j].aniFrame)) + dstRect->h * k;
+	short currentFrame = _input[i][j].aniFrame;
+
+	if (currentFrame != -1) {
+		if (foundAnswer) {
+			if (currentFrame < boxWaitFrames) {
+				if (currentFrame == boxWaitFrames / 2) {
+					if (j < 2) {
+						_input[i][j + 1].aniFrame = 0;
+					}
+				}
+				// nothing
+			}
+			else if (currentFrame < boxWaitFrames + boxBounceFrames / 2) {
+				// smol bounce
+				dstRect->y -= (currentFrame - boxWaitFrames) * 1;
 			}
 			else {
-				dstRect->h = (dstRect->h - (int)(((float)120 / boxAniLength) * (boxAniLength - (_input[i][j].aniFrame)))) / 3;
-				dstRect->y += (int)(((float)60 / boxAniLength) * (boxAniLength - (_input[i][j].aniFrame))) + dstRect->h * k;
+				dstRect->y -= (boxBounceFrames + boxWaitFrames - currentFrame) * 1;
+			}
+			(_input[i][j].aniFrame)++;
+			currentFrame = _input[i][j].aniFrame;
+			if (currentFrame == boxBounceFrames + boxWaitFrames) {
+				_input[i][j].aniFrame = -1;
 			}
 		}
 		else {
-			if ((_input[i][j].aniFrame) <= boxAniLength / 2) {
-				dstRect->h -= (int)(((float)120 / boxAniLength) * (_input[i][j].aniFrame));
-				dstRect->y += (int)(((float)60 / boxAniLength) * (_input[i][j].aniFrame));
+			// decrease or increase by 4 pixels per frame
+		// 3 frame difference per box
+		// stop on frame 30
+			if (_input[i][j].color[k] != 0) {
+				if ((currentFrame) <= boxFlipFrames / 2) {
+					dstRect->h = (dstRect->h - (int)(((float)120 / boxFlipFrames) * (currentFrame))) / 3;
+					dstRect->y += (int)(((float)60 / boxFlipFrames) * (currentFrame)) + dstRect->h * k;
+				}
+				else {
+					dstRect->h = (dstRect->h - (int)(((float)120 / boxFlipFrames) * (boxFlipFrames - (currentFrame)))) / 3;
+					dstRect->y += (int)(((float)60 / boxFlipFrames) * (boxFlipFrames - (currentFrame))) + dstRect->h * k;
+				}
 			}
 			else {
-				dstRect->h -= (int)(((float)120 / boxAniLength) * (boxAniLength - (_input[i][j].aniFrame)));
-				dstRect->y += (int)(((float)60 / boxAniLength) * (boxAniLength - (_input[i][j].aniFrame)));
+				if ((currentFrame) <= boxFlipFrames / 2) {
+					dstRect->h -= (int)(((float)120 / boxFlipFrames) * (currentFrame));
+					dstRect->y += (int)(((float)60 / boxFlipFrames) * (currentFrame));
+				}
+				else {
+					dstRect->h -= (int)(((float)120 / boxFlipFrames) * (boxFlipFrames - (currentFrame)));
+					dstRect->y += (int)(((float)60 / boxFlipFrames) * (boxFlipFrames - (currentFrame)));
+				}
 			}
-		}
 
-		if (k == 2) {
-			(_input[i][j].aniFrame)++;
-			if ((_input[i][j].aniFrame) == (boxAniLength / 4) && j < 2) {
-				_input[i][j + 1].aniFrame = 1;
-			}
-			else if ((_input[i][j].aniFrame) == boxAniLength / 2) {
-				checkAnswer(i, j);
-			}
-			else if ((_input[i][j].aniFrame) == boxAniLength) {
-				(_input[i][j].aniFrame) = -1;
-				if (j == 2) {
-					isTypable = true;
-					setAnswerData();
+			if (k == 2) {
+				(_input[i][j].aniFrame)++;
+				currentFrame = _input[i][j].aniFrame;
+				if (currentFrame == (boxFlipFrames / 4) && j < 2) {
+					_input[i][j + 1].aniFrame = 1;
+				}
+				else if (currentFrame == boxFlipFrames / 2) {
+					for (int l = 0; l < 3; l++) {
+						_input[i][j].color[l] = tmpColor[j][l];
+					}
+				}
+				else if (currentFrame == boxFlipFrames) {
+					_input[i][j].aniFrame = -1;
+					if (j == 2) {
+						checkAnswerFound();
+						if (foundAnswer) {
+							_input[i][0].aniFrame = 0;
+						}
+						else {
+							isTypable = true;
+							setAnswerData();
+						}
+					}
 				}
 			}
 		}
@@ -648,40 +877,51 @@ short Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture*
 			dstRect->y += 20 * k;
 		}
 	}
-	// i keep getting false warnings about 'j == 4' and its pissing me off
-	SDL_RenderCopy(_renderer, box[_input[i][j].color[k]], NULL, dstRect);
+	if (j < 3) {
+		// vs keeps warning about an event that never occurs ("j == 3")
+		SDL_RenderCopy(_renderer, box[_input[i][j].color[k]], NULL, dstRect);
+	}
 	return 0;
 }
 
-// Self-explanatory.
-// x and y coordinates are the topleft corner of the box the text will be in.
-// This function automatically repositions the texture so that it looks centered.
 void Kordle::renderText(SDL_Texture* _texture, SDL_Renderer* _renderer, SDL_Rect* dstRect, short* data, short* data2) {
 	dstRect->w = dstRect->h = 60;
 	if (textTexture == NULL) return;
 
-	if (_input[data2[0]][data2[1]].aniFrame != -1) {
-		SDL_QueryTexture(textTexture[data2[0]][data2[1]], NULL, NULL, &(dstRect->w), &(dstRect->h));
-		dstRect->x += (60 - dstRect->w) / 2;
-		dstRect->y += (60 - dstRect->h) / 2 - 2;
-		if (_input[data2[0]][data2[1]].aniFrame <= boxAniLength / 2) {
-			dstRect->h -= (int)(((float)120 / boxAniLength) * _input[data2[0]][data2[1]].aniFrame);
-			dstRect->y += (int)(((float)60 / boxAniLength) * _input[data2[0]][data2[1]].aniFrame);
+	SDL_QueryTexture(textTexture[data2[0]][data2[1]], NULL, NULL, &(dstRect->w), &(dstRect->h));
+	dstRect->x += (60 - dstRect->w) / 2;
+	dstRect->y += (60 - dstRect->h) / 2 - 2;
+	short currentFrame = _input[data2[0]][data2[1]].aniFrame;
+
+	if (currentFrame != -1) {
+		if (foundAnswer) {
+			if (currentFrame < boxWaitFrames) {
+				// nothing
+			}
+			else if (currentFrame < boxWaitFrames + boxBounceFrames / 2) {
+				// smol bounce
+				dstRect->y -= (currentFrame - boxWaitFrames) * 1;
+			}
+			else {
+				dstRect->y -= (boxBounceFrames + boxWaitFrames - currentFrame) * 1;
+			}
 		}
 		else {
-			dstRect->h -= (int)(((float)120 / boxAniLength) * (boxAniLength - _input[data2[0]][data2[1]].aniFrame));
-			dstRect->y += (int)(((float)60 / boxAniLength) * (boxAniLength - _input[data2[0]][data2[1]].aniFrame));
+			if (currentFrame <= boxFlipFrames / 2) {
+				dstRect->h -= (int)(((float)120 / boxFlipFrames) * currentFrame);
+				dstRect->y += (int)(((float)60 / boxFlipFrames) * currentFrame);
+			}
+			else {
+				dstRect->h -= (int)(((float)120 / boxFlipFrames) * (boxFlipFrames - currentFrame));
+				dstRect->y += (int)(((float)60 / boxFlipFrames) * (boxFlipFrames - currentFrame));
+			}
 		}
-	}
-	else {
-		SDL_QueryTexture(textTexture[data2[0]][data2[1]], NULL, NULL, &(dstRect->w), &(dstRect->h));
-		dstRect->x += (60 - dstRect->w) / 2;
-		dstRect->y += (60 - dstRect->h) / 2 - 2;
 	}
 
 	SDL_RenderCopy(_renderer, textTexture[data2[0]][data2[1]], NULL, dstRect);
 }
 
+// Updates the input texture(s).
 void Kordle::drawText(Font* f, SDL_Renderer* _renderer, int type) {
 	if (!type) return;
 	int rk = findRK();

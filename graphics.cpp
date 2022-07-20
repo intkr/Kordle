@@ -19,7 +19,6 @@ Graphics::~Graphics() {
 	SDL_DestroyWindow(_window);
 }
 
-// Renders the default layout of the game screen.
 void Graphics::renderScreen(SDL_Texture* title, Settings* s) {
 	drawBackground(title, s->getIconSize());
 	if (s->isMenuOpen() || (!s->isMenuOpen() && s->menuAnimationNo != -1)) {
@@ -27,13 +26,12 @@ void Graphics::renderScreen(SDL_Texture* title, Settings* s) {
 	}
 }
 
-
 // Draws sprites with a little bit of math and a lot of handmade anti-aliasing,
 // then saves the results in menuSprites for future use.
 void Graphics::initSprites(int iconSize) {
 
 	// Allocate space
-	for (int i = 0; i < 6; i++) {
+	for (int i = 0; i < _countof(menuSprites); i++) {
 		// SDL_PIXELFORMAT_RGBA8888 if below doesn't accept 0~255 idk
 		menuSprites[i] = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, iconSize, iconSize);
 		SDL_SetRenderTarget(_renderer, menuSprites[i]);
@@ -43,7 +41,7 @@ void Graphics::initSprites(int iconSize) {
 		SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 0);
 		SDL_RenderFillRect(_renderer, NULL);
 	}
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < _countof(boxSprites); i++) {
 		boxSprites[i] = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 60, 60);
 		SDL_SetRenderTarget(_renderer, boxSprites[i]);
 		SDL_SetTextureBlendMode(boxSprites[i], SDL_BLENDMODE_NONE);
@@ -73,6 +71,10 @@ void Graphics::initSprites(int iconSize) {
 	SDL_RenderFillRect(_renderer, NULL);
 
 	SDL_SetRenderTarget(_renderer, boxSprites[3]);
+	SDL_SetRenderDrawColor(_renderer, 129, 134, 96, 255);
+	SDL_RenderFillRect(_renderer, NULL);
+
+	SDL_SetRenderTarget(_renderer, boxSprites[4]);
 	SDL_SetRenderDrawColor(_renderer, 101, 139, 85, 255);
 	SDL_RenderFillRect(_renderer, NULL);
 

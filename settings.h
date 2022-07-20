@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <stdio.h> // printf testing
 #include <fstream>
 #include <string>
 

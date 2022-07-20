@@ -1,7 +1,8 @@
 ﻿#include "input.h"
 
-// Figures out which button was pressed based on current mouse position.
-// Hitboxes of buttons are taken from menuRect (graphics.h)
+// Button click detection system.
+// Hitboxes are defined in menuRect (in graphics.h).
+// Refer to 'Button codes' in notes.txt for details.
 int Input::detectButton(int* pos, int status, SDL_Rect rects[7]) {
 	int btnCode = -1;
 	switch (status) {
@@ -30,8 +31,8 @@ int Input::detectButton(int* pos, int status, SDL_Rect rects[7]) {
 	return btnCode;
 }
 
-// Returns an arbitrary integer based on button presses.
-// Refer to notes.txt for more information on return values.
+// Returns a code number based on the clicked button.
+// Refer to 'Click handles' in notes.txt for details.
 int Input::handleClick(int btn) {
 	switch (btn) {
 	case 0:
@@ -46,6 +47,8 @@ int Input::handleClick(int btn) {
 	}
 }
 
+// Returns a number corresponding to keys on the physical keyboard.
+// Refer to 'Key codes' in notes.txt for details.
 int Input::handleKey(SDL_Keycode key, SDL_Keymod mod) {
 	switch (key) {
 	// consonants

@@ -95,7 +95,6 @@ int main(int argc, char** argv) {
 			// key stuff
 			case SDL_KEYDOWN:
 				key = i->handleKey(_event.key.keysym.sym, (SDL_Keymod)_event.key.keysym.mod);
-				printf("%d\n", key);
 				if (key == -1) {
 
 				}

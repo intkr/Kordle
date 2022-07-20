@@ -1,8 +1,6 @@
 ﻿Todo
 	Answer check + animation
 
-	Figure out why drawing text costs 30MB
-
 	Make a pop-up system
 		- Make two SDL_Textures, one for the pop-up screen and one for the game screen
 		- Make the actual pop-up on the first one;
@@ -11,11 +9,16 @@
 		- copy the first one to the center of the second one,
 		  which should have a translucent gray color to dim the stuff behind the pop-up
 		- After all above, render it on screen
+		- 'Popup' section in notes.txt
 
 	Do stuff with menu icons
 	Tooltip support / full keyboard support / random typing support
 	Additional support to unfortunate individiuals whose shift keys don't work lol
 	---
+	Show 'help' popup on startup if gamesPlayed = 0 and tries = 0
+
+	save system (save every valid Enter input)
+
 	add font credits and stuff when making a readme or smth
 
 	Design window icons
@@ -56,8 +59,17 @@ Graphics
 		5 : Minimize
 	(menuRect exclusive)
 		6 : Close pop-up
+	boxSprites
+		0 : Default
+		1 : Gray	(Wrong character, wrong location)
+		2 : Yellow	(Correct character, wrong location)
+		3 : Olive	(Wrong* character, correct location)
+		4 : Green	(Correct character, correct location)
+		
+		* When the wrong character is part of a correct, combined character
+		  ex) ㅗ / ㅘ (If correct location, returns olive)
 
-Button Codes
+Button codes
 	### This does not correlate to menuSprites or menuRect in graphics.h
 	### Refer to the 'Graphics' section
    -1 : None

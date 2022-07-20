@@ -64,4 +64,6 @@ private:
 	const int boxFlipFrames = 30;
 	const int boxWaitFrames = 20;
 	const int boxBounceFrames = 40; // 30 frames of waiting + 30 frames of animation
+
+	const int releaseDateUNIX = 19193;
 };

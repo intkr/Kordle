@@ -19,6 +19,7 @@
 SDL_HitTestResult hitTest(SDL_Window* win, const SDL_Point* area, void* data);
 
 int main(int argc, char** argv) {
+	//printf("%d\n", time(NULL) / 86400);
 	ShowWindow(GetConsoleWindow(), SHOW_OPENWINDOW);
 	//ShowWindow(GetConsoleWindow(), HIDE_WINDOW);	// Don't use this when testing new stuff
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);

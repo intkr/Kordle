@@ -39,7 +39,6 @@ Kordle::Kordle() {
 
 	tries = tmp[0];
 	playedGames = tmp[1];
-	srand((unsigned int)time(NULL) / 86400);
 	maxStreak = tmp[2];
 	currentStreak = tmp[3];
 	totalWon = 0;
@@ -64,8 +63,7 @@ Kordle::Kordle() {
 	bool flag = false;
 	if (wreader.good()) {
 		// skip previous answers
-		// (signed int)(rand() % 365) - 1
-		for (int i = 0; i <= 0 - 1; i++) {
+		for (int i = 0; i <= (signed int)time(NULL) / 86400 - releaseDateUNIX - 1; i++) {
 			std::getline(wreader, wline);
 		}
 		// actual line containing today's answer
@@ -104,14 +102,15 @@ Kordle::Kordle() {
 
 	// Flag is activated if answer can't be initialized from the text file
 	if (flag) {
-		// resets to '오류발'
-		answer[0][0] = 11;
+		// resets to '고장남'
+		answer[0][0] = 0;
 		answer[0][1] = 8;
-		answer[1][0] = 5;
-		answer[1][1] = 17;
-		answer[2][0] = 7;
+		answer[1][0] = 12;
+		answer[1][1] = 0;
+		answer[1][2] = 21;
+		answer[2][0] = 2;
 		answer[2][1] = 0;
-		answer[2][2] = 8;
+		answer[2][2] = 16;
 	}
 	wreader.close();
 	setAnswerData();

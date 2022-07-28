@@ -148,6 +148,12 @@ int Input::handleKey(SDL_Keycode key, SDL_Keymod mod) {
 		return 99;
 	case SDLK_ESCAPE:
 		return 100;
+	case SDLK_1:
+		return 101;
+	case SDLK_2:
+		return 102;
+	case SDLK_3:
+		return 103;
 	default:
 		return -1;
 	}

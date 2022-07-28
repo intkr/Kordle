@@ -1,6 +1,4 @@
 ﻿Todo
-	Answer check + animation
-
 	Make a pop-up system
 		- Make two SDL_Textures, one for the pop-up screen and one for the game screen
 		- Make the actual pop-up on the first one;
@@ -10,9 +8,12 @@
 		  which should have a translucent gray color to dim the stuff behind the pop-up
 		- After all above, render it on screen
 		- 'Popup' section in notes.txt
+		- Set isTypable to false when popup is open,
+		  and change back to true when popup is closed if tries < 5 and foundAnswer = false
 
 	Do stuff with menu icons
 	Tooltip support / full keyboard support / random typing support
+	korean/english language support
 	Additional support to unfortunate individiuals whose shift keys don't work lol
 	---
 	Show 'help' popup on startup if gamesPlayed = 0 and tries = 0
@@ -149,6 +150,9 @@ Key codes
 	Backspace : 98
 	Enter : 99
 	Escape : 100
+	1 (Help button): 101
+	2 (Stat button): 102
+	3 (Settings button): 103
 
 data.txt
 	tries

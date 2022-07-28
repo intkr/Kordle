@@ -99,8 +99,15 @@ int main(int argc, char** argv) {
 				if (key == -1) {
 
 				}
-				else if (key >= 100) { /// should be 100 but I didn't code for Enter yet
-					// game-unrelaed keys
+				else if (key >= 100) {
+					// game-unrelated keys
+					switch (key - 100) {
+					case 0:
+						s->switchMenuOpen();
+						break;
+					default:
+						break;
+					}
 				}
 				else {
 					// game-related keys
@@ -124,10 +131,11 @@ int main(int argc, char** argv) {
 		if (frameSleepTime > 0)
 			SDL_Delay(frameSleepTime);
 	}
+	delete(g);
+	delete(s);
+	delete(i);
+	delete(k);
 
-	f->~Font();
-	g->~Graphics();
-	s->~Settings();
 	TTF_Quit();
 	SDL_Quit();
 	return 0;

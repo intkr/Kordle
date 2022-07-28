@@ -149,6 +149,7 @@
     <ClCompile Include="graphics.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="popup.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="font.cpp" />
   </ItemGroup>
@@ -156,6 +157,7 @@
     <ClInclude Include="kordle.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="input.h" />
+    <ClInclude Include="popup.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="font.h" />

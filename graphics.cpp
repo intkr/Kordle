@@ -260,10 +260,11 @@ void Graphics::drawBackground(SDL_Texture* title, int iconSize) {
 
 	// Title logo
 	SDL_Rect titleRect;
-	titleRect.x = 141;
+	//titleRect.x = 141;
 	titleRect.y = 7;
 	titleRect.w = titleWidth;
 	titleRect.h = titleHeight;
+	titleRect.x = (400 - titleWidth) / 2;
 	SDL_RenderCopy(_renderer, title, NULL, &titleRect);
 
 	// Menu icon

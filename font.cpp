@@ -1,18 +1,27 @@
 ﻿#include "font.h"
 
 Font::Font(Graphics* g) {
-	gameFont = TTF_OpenFont("assets/game.ttf", 38);
-	textFont = TTF_OpenFont("assets/text.ttf", 38);
+	titleFont = TTF_OpenFont("assets/HCRBatang.ttf", 38);
+	boxFont = TTF_OpenFont("assets/MaruBuri.ttf", 38);
+	textFont = TTF_OpenFont("assets/MaruBuri.ttf", 15);
 	WHITE.r = WHITE.g = WHITE.b = WHITE.r = 255;
 
-	titleTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUTF8_Blended(textFont, "Kordle", WHITE));
+	if (false) {
+		// kor
+		Uint16 test[5] = { 44544, 51088, 50556, 44396, 0 };
+		titleTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUNICODE_Blended(boxFont, test, WHITE));
+	}
+	else {
+		// eng
+		titleTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUTF8_Blended(boxFont, "Kordle", WHITE));
+	}
 	// textSurface is initialized when in use
 }
 
 Font::~Font() {
 	SDL_DestroyTexture(titleTexture);
-	TTF_CloseFont(gameFont);
-	TTF_CloseFont(textFont);
+	TTF_CloseFont(titleFont);
+	TTF_CloseFont(boxFont);
 }
 
 SDL_Texture* Font::getTitleTexture() {
@@ -38,7 +47,7 @@ SDL_Texture* Font::getLetterTexture(SDL_Texture* _texture, SDL_Renderer* _render
 		// Has a syllable to render
 		text[0] = 44032 + jamo[0] * 588 + jamo[1] * 28 + jamo[2];
 	}
-	textSurface = TTF_RenderUNICODE_Blended(gameFont, text, WHITE);
+	textSurface = TTF_RenderUNICODE_Blended(titleFont, text, WHITE);
 	_texture = SDL_CreateTextureFromSurface(_renderer, textSurface);
 	SDL_FreeSurface(textSurface);
 	return _texture;

@@ -11,6 +11,7 @@
 #include "font.h"
 #include "input.h"
 #include "kordle.h"
+#include "popup.h"
 
 /*		Kordle - Korean version of Kordle
 						   Github : intkr
@@ -30,6 +31,7 @@ int main(int argc, char** argv) {
 	Font* f = new Font(g);
 	Input* i = new Input();
 	Kordle* k = new Kordle();
+	Popup* p = new Popup();
 
 	SDL_Event _event;
 
@@ -112,7 +114,21 @@ int main(int argc, char** argv) {
 				else {
 					// game-related keys
 					if (k->isTypable) {
-						k->drawText(f, g->_renderer, k->handleInput(key));
+						handle = k->handleInput(key);
+						if (handle >= 100) {
+							// popup
+							if (handle >= 200) {
+								p->bigPopFrames = s->getFPS() * 3;
+							}
+							else {
+								p->smallPopFrames = s->getFPS() * 3;
+							}
+							p->drawPopup(g, f, handle);
+							k->drawText(f, g->_renderer, 0);
+						}
+						else {
+							k->drawText(f, g->_renderer, handle);
+						}
 					}
 				}
 				break;
@@ -124,6 +140,7 @@ int main(int argc, char** argv) {
 		SDL_RenderClear(g->_renderer);
 		g->renderScreen(f->getTitleTexture(), s);
 		k->renderGame(f, g);
+		p->renderPopup(g);
 		SDL_RenderPresent(g->_renderer);
 
 		// FPS limiting
@@ -131,6 +148,8 @@ int main(int argc, char** argv) {
 		if (frameSleepTime > 0)
 			SDL_Delay(frameSleepTime);
 	}
+
+	delete(p);
 	delete(g);
 	delete(s);
 	delete(i);

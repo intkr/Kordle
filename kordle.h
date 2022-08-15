@@ -23,7 +23,7 @@ class Kordle {
 public:
 	Kordle();
 	~Kordle();
-	short renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture** box, short* data);
+	void renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture** box, short* data);
 	void renderText(SDL_Texture* _texture, SDL_Renderer* _renderer, SDL_Rect* dstRect, short* data, short* data2);
 	void renderGame(Font* f, Graphics* g);
 	void drawText(Font* f, SDL_Renderer* _renderer, int type);

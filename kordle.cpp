@@ -282,7 +282,7 @@ int Kordle::handleInput(int key) {
 	if (key == 99) {
 		if (_input[tries][2].jamo[1] == -1) {
 			printf("Not a word\n");
-			return 0;
+			return 100;
 		}
 		if (validateAnswer()) {
 			checkAnswer();
@@ -292,6 +292,7 @@ int Kordle::handleInput(int key) {
 		}
 		else {
 			printf("Not a word\n");
+			return 101;
 		}
 		return 0;
 	}
@@ -790,7 +791,7 @@ void Kordle::renderGame(Font* f, Graphics* g) {
 	}
 }
 
-short Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture** box, short* data) {
+void Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture** box, short* data) {
 	int i = data[0], j = data[1], k = data[2];
 	dstRect->w = dstRect->h = 60;
 	short currentFrame = _input[i][j].aniFrame;
@@ -880,7 +881,6 @@ short Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture*
 		// vs keeps warning about an event that never occurs ("j == 3")
 		SDL_RenderCopy(_renderer, box[_input[i][j].color[k]], NULL, dstRect);
 	}
-	return 0;
 }
 
 void Kordle::renderText(SDL_Texture* _texture, SDL_Renderer* _renderer, SDL_Rect* dstRect, short* data, short* data2) {

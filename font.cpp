@@ -3,7 +3,7 @@
 Font::Font(Graphics* g) {
 	titleFont = TTF_OpenFont("assets/HCRBatang.ttf", 38);
 	boxFont = TTF_OpenFont("assets/MaruBuri.ttf", 38);
-	textFont = TTF_OpenFont("assets/MaruBuri.ttf", 15);
+	textFont = TTF_OpenFont("assets/MaruBuri.ttf", 20);
 	WHITE.r = WHITE.g = WHITE.b = WHITE.r = 255;
 
 	if (false) {
@@ -15,7 +15,7 @@ Font::Font(Graphics* g) {
 		// eng
 		titleTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUTF8_Blended(boxFont, "Kordle", WHITE));
 	}
-	// textSurface is initialized when in use
+	textSurface = NULL;
 }
 
 Font::~Font() {
@@ -26,6 +26,14 @@ Font::~Font() {
 
 SDL_Texture* Font::getTitleTexture() {
 	return titleTexture;
+}
+
+TTF_Font* Font::getTextFont() {
+	return textFont;
+}
+
+SDL_Color* Font::getWHITE() {
+	return &WHITE;
 }
 
 

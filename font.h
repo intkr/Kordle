@@ -14,6 +14,8 @@ public:
 
 	SDL_Texture* getTitleTexture();
 	SDL_Texture* getLetterTexture(SDL_Texture* _texture, SDL_Renderer* _renderer, short* jamo);
+	TTF_Font* getTextFont();
+	SDL_Color* getWHITE();
 private:
 	TTF_Font* titleFont;
 	TTF_Font* boxFont;

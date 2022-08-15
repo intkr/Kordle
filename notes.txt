@@ -1,4 +1,7 @@
 ﻿Todo
+	fix algorithm problems
+	make more room for compound letters
+
 	Make a pop-up system
 		- Make two SDL_Textures, one for the pop-up screen and one for the game screen
 		- Make the actual pop-up on the first one;
@@ -93,6 +96,11 @@ Colors
 	1 : Gray
 	2 : Yellow
 	3 : Green
+
+Popup handles
+	100 : Input is not 3 characters
+	101 : Word is not in dictionary
+
 
 Key codes
 	(default) : -1

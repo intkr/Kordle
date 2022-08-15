@@ -58,7 +58,6 @@ Kordle::Kordle() {
 	}
 	if (tries == 5) isTypable = false;
 	else isTypable = true;
-
 	wreader.open("assets/answer.csv", std::wifstream::in);
 	bool flag = false;
 	if (wreader.good()) {
@@ -196,6 +195,7 @@ bool Kordle::validateAnswer() {
 //  0 : No updates
 //  1 : Forward direction update (character inputs)
 // -1 : Backward direction update (backspace input)
+// (other) : No updates, signal popup
 int Kordle::handleInput(int key) {
 	if (!isTypable) return false;
 	/* Steps
@@ -613,13 +613,16 @@ void Kordle::checkAnswer() {
 		}
 	}
 
+	int tmpJamo = -1;
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			if (tmpColor[i][j] == 4 || tmpColor[i][j] == 2) continue;
-			if (checkCombinedJamo(i, j)) {
+			tmpJamo = checkCombinedJamo(i, j);
+			if (tmpJamo != -1) {
 				// Olive
-				if (answerData[tmp] > 0) {
+				if (answerData[tmpJamo] > 0) {
 					tmpColor[i][j] = 3;
+					answerData[tmpJamo] -= 1;
 				}
 				else {
 					tmpColor[i][j] = 1;
@@ -643,112 +646,95 @@ void Kordle::checkAnswerFound() {
 	}
 	foundAnswer = true;
 }
-bool Kordle::checkCombinedJamo(int i, int j) {
+int Kordle::checkCombinedJamo(int i, int j) {
 	short tmp = _input[tries][i].jamo[j];
 	switch (j) {
 	case 0:
-		return false;
+		return -1;
 	case 1:
 		// vowel
-		switch (answer[i][j]) {
-		case 9:
-			if (tmp == 0 || tmp == 8)
-				return true;
-			else
-				return false;
-		case 10:
-			if (tmp == 1 || tmp == 8)
-				return true;
-			else
-				return false;
-		case 11:
-			if (tmp == 20 || tmp == 8)
-				return true;
-			else
-				return false;
-		case 14:
-			if (tmp == 4 || tmp == 13)
-				return true;
-			else
-				return false;
-		case 15:
-			if (tmp == 5 || tmp == 13)
-				return true;
-			else
-				return false;
-		case 16:
-			if (tmp == 20 || tmp == 13)
-				return true;
-			else
-				return false;
-		case 19:
-			if (tmp == 20 || tmp == 18)
-				return true;
-			else
-				return false;
-		default:
-			return false;
+		for (int k = 0; k < 3; k++) {
+			switch (answer[k][j]) {
+			case 9:
+				if (tmp == 0 || tmp == 8)
+					return 59;
+				break;
+			case 10:
+				if (tmp == 1 || tmp == 8)
+					return 60;
+				break;
+			case 11:
+				if (tmp == 20 || tmp == 8)
+					return 61;
+				break;
+			case 14:
+				if (tmp == 4 || tmp == 13)
+					return 64;
+				break;
+			case 15:
+				if (tmp == 5 || tmp == 13)
+					return 65;
+				break;
+			case 16:
+				if (tmp == 20 || tmp == 13)
+					return 66;
+				break;
+			case 19:
+				if (tmp == 20 || tmp == 18)
+					return 69;
+				break;
+			}
 		}
-		return false;
+		return -1;
 	case 2:
 		// final consonant
-		switch (answer[i][j]) {
-		case 3:
-			if (tmp == 1 || tmp == 19)
-				return true;
-			else
-				return false;
-		case 5:
-			if (tmp == 4 || tmp == 22)
-				return true;
-			else
-				return false;
-		case 9:
-			if (tmp == 1 || tmp == 8)
-				return true;
-			else
-				return false;
-		case 10:
-			if (tmp == 16 || tmp == 8)
-				return true;
-			else
-				return false;
-		case 11:
-			if (tmp == 17 || tmp == 8)
-				return true;
-			else
-				return false;
-		case 12:
-			if (tmp == 19 || tmp == 8)
-				return true;
-			else
-				return false;
-		case 13:
-			if (tmp == 25 || tmp == 8)
-				return true;
-			else
-				return false;
-		case 14:
-			if (tmp == 26 || tmp == 8)
-				return true;
-			else
-				return false;
-		case 15:
-			if (tmp == 27 || tmp == 8)
-				return true;
-			else
-				return false;
-		case 18:
-			if (tmp == 17 || tmp == 19)
-				return true;
-			else
-				return false;
-		default:
-			return false;
+		for (int k = 0; k < 3; k++) {
+			switch (answer[k][2]) {
+			case 3:
+				if (tmp == 1 || tmp == 19)
+					return 103;
+				break;
+			case 5:
+				if (tmp == 4 || tmp == 22)
+					return 105;
+				break;
+			case 9:
+				if (tmp == 1 || tmp == 8)
+					return 109;
+				break;
+			case 10:
+				if (tmp == 16 || tmp == 8)
+					return 110;
+				break;
+			case 11:
+				if (tmp == 17 || tmp == 8)
+					return 111;
+				break;
+			case 12:
+				if (tmp == 19 || tmp == 8)
+					return 112;
+				break;
+			case 13:
+				if (tmp == 25 || tmp == 8)
+					return 113;
+				break;
+			case 14:
+				if (tmp == 26 || tmp == 8)
+					return 114;
+				break;
+			case 15:
+				if (tmp == 27 || tmp == 8)
+					return 115;
+				break;
+			case 18:
+				if (tmp == 17 || tmp == 19)
+					return 118;
+				break;
+			}
 		}
 	default:
 		// shouldn't happen
-		return false;
+		return -1;
 	}
 }
 

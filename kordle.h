@@ -34,7 +34,7 @@ private:
 	int findRK();
 	void checkAnswer();
 	void checkAnswerFound();
-	bool checkCombinedJamo(int i, int j);
+	int checkCombinedJamo(int i, int j);
 	short getJamoData(short data, int type);
 	void setAnswerData();
 	bool validateAnswer();
@@ -65,5 +65,5 @@ private:
 	const int boxWaitFrames = 20;
 	const int boxBounceFrames = 40; // 30 frames of waiting + 30 frames of animation
 
-	const int releaseDateUNIX = 19103;
+	const int releaseDateUNIX = 19219;
 };

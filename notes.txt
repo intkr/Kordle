@@ -1,22 +1,29 @@
 ﻿Todo
 	fix algorithm problems
-	make more room for compound letters
+		- problem example : '닭고기' and '경희대'
+			- probably need a new array containing
+			separated characters of compound characters
+			^ think about this more later
 
-	Make a pop-up system
-		- Make two SDL_Textures, one for the pop-up screen and one for the game screen
-		- Make the actual pop-up on the first one;
-		  Close icon at top right
-		  Other stuff for whatever the pop-up is about
-		- copy the first one to the center of the second one,
-		  which should have a translucent gray color to dim the stuff behind the pop-up
-		- After all above, render it on screen
-		- 'Popup' section in notes.txt
-		- Set isTypable to false when popup is open,
-		  and change back to true when popup is closed if tries < 5 and foundAnswer = false
+	find a better example for the 'help' popup
+	and fix the lazy part
 
-	Do stuff with menu icons
+	settings popup
+		- color scheme	[switch]		(light / dark)
+		- screen size	[button]		(0.75x / 1x / 1.5x)				<< need to add a variable on Settings / data on save.txt
+		- language		[button]		("한국어" or "English")
+		- debug mode	[switch]		(on / off)
+		- contacts		[text]			(khu email)
+		- save button at bottom right
+
+	stats popup
+		- add time until next wordle
+		"(hh:mm:ss) until next Kordle" or "다음 단어까지 (hh:mm:ss)"
+
+	if game is unfinished (0 < tries < 6) and the day passes, count it as a lost game
+
 	Tooltip support / full keyboard support / random typing support
-	korean/english language support
+	korean/english language support (extern char lang)
 	Additional support to unfortunate individiuals whose shift keys don't work lol
 	---
 	Show 'help' popup on startup if gamesPlayed = 0 and tries = 0
@@ -28,11 +35,6 @@
 	Design window icons
 
 	make a readme for whatever idk stuff (im stuff)
-
-	Bigger screen resolution support (idk why but will do) << use a multiplier of 1.5
-		- Implement a multiplier for every drawn sprite, and save the multiplier in settings.txt
-		(Currently saves resolution 400x650)
-		- Change SDL drawing functions to F versions so it allows subpixel precision
 
 Misc notes
 	Figure out whether or not to hardcode the answers
@@ -84,12 +86,19 @@ Button codes
 	4 : Settings
 	5 : Minimize
 	6 : Close (Popup)
+	10 : Color scheme (Settings)
+	11 : Screen size (Settings)
+	12 : Language (Settings)
+	13 : Debug mode (Settings)
+	14 : Save (Settings)
 
 Click handles
    -1 : None
 	1 : Menu button, switch s->openMenu
 	2 : Minimize button, minimize game
+	3 : Stat button, open stat popup
 	4 : Close button, close game
+	5 : Close button, close popup
 
 Colors
 	0 : Default
@@ -100,7 +109,9 @@ Colors
 Popup handles
 	100 : Input is not 3 characters
 	101 : Word is not in dictionary
-
+	200 : Stats
+	201 : Help (tutorial)
+	202 : Settings
 
 Key codes
 	(default) : -1

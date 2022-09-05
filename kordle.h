@@ -29,7 +29,19 @@ public:
 	void drawText(Font* f, SDL_Renderer* _renderer, int type);
 	int handleInput(int key);
 
+	// 10~15 : gamesWon		0 : tries
+	// 1 : playedGames		2 : maxStreak
+	// 3 : currentStreak	4 : winrate
+	unsigned int getPlayerData(int n);
+	
+	void updatePlayerData(int n); // only happens when today's game ends
+
 	bool isTypable;
+	bool foundAnswer;
+
+	int popupDelayFrames;
+	int delayedPopup;
+
 private:
 	int findRK();
 	void checkAnswer();
@@ -43,7 +55,6 @@ private:
 	unsigned short answer[3][3];
 	unsigned short tmpColor[3][3];
 	SDL_Texture* textTexture[6][3];
-	bool foundAnswer; // probably unnecessary
 
 	std::map<short, int> answerData;
 	std::map<short, int> inputData;

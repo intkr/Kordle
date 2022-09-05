@@ -115,6 +115,11 @@ void Graphics::initSprites(int iconSize) {
 		menuRect[i].x += (i - 2) * 30 - 88;
 		menuRect[i].y *= 4;
 	}
+	
+	menuRect[6].w = 20;
+	menuRect[6].h = 20;
+	// use (popup width - 34) for x, and 16 for y
+
 
 	// Hint icon
 		// performed anti-aliasing manually just because
@@ -342,4 +347,8 @@ SDL_Rect* Graphics::getMenuRects() {
 
 SDL_Texture** Graphics::getBoxSprites() {
 	return boxSprites;
+}
+
+SDL_Texture** Graphics::getMenuSprites() {
+	return menuSprites;
 }

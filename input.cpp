@@ -39,8 +39,16 @@ int Input::handleClick(int btn) {
 		return 1;
 	case 1:
 		return 4;
+	case 2:
+		return 6;
+	case 3:
+		return 3;
+	case 4:
+		return 7;
 	case 5:
 		return 2;
+	case 6:
+		return 5;
 	default:
 		// No buttons are pressed
 		return -1;

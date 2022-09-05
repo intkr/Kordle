@@ -1,6 +1,8 @@
 ﻿#include "kordle.h"
 
 Kordle::Kordle() {
+	popupDelayFrames = 0;
+	delayedPopup = 0;
 	rk = -1;
 	foundAnswer = false;
 	// initialize stuff to default
@@ -56,13 +58,15 @@ Kordle::Kordle() {
 	else {
 		winrate = 0;
 	}
-	if (tries == 5) isTypable = false;
+	if (tries == 6) isTypable = false;
 	else isTypable = true;
 	wreader.open("assets/answer.csv", std::wifstream::in);
 	bool flag = false;
 	if (wreader.good()) {
 		// skip previous answers
-		for (int i = 0; i <= (signed int)time(NULL) / 86400 - releaseDateUNIX - 1; i++) {
+
+		//(signed int)time(NULL) / 86400 - releaseDateUNIX - 1
+		for (int i = 0; i <= -1; i++) {
 			std::getline(wreader, wline);
 		}
 		// actual line containing today's answer
@@ -123,6 +127,48 @@ Kordle::~Kordle() {
 	}
 }
 
+void Kordle::updatePlayerData(int n) {
+	switch (n) {
+	case 0: // lost
+		playedGames++;
+		currentStreak = 0;
+		winrate = (int)((float)totalWon / playedGames * 100);
+		tries = 6;
+		break;
+	case 1: // won
+		playedGames++;
+		gamesWon[tries - 1]++;
+		currentStreak++;
+		if (currentStreak > maxStreak) maxStreak = currentStreak;
+		totalWon++;
+		winrate = (int)((float)totalWon / playedGames * 100);
+		break;
+	case -1: // tried
+		tries++;
+		break;
+	default:
+		// shouldn't happen
+		break;
+	}
+}
+
+unsigned int Kordle::getPlayerData(int n) {
+	if (n >= 10) return gamesWon[n - 10];
+	switch (n) {
+	case 0:
+		return tries;
+	case 1:
+		return playedGames;
+	case 2:
+		return winrate;
+	case 3:
+		return currentStreak;
+	case 4:
+		return maxStreak;
+	}
+	return -1; // shouldn't happen
+}
+
 // Returns a number corresponding to a character.
 //
 // * Adds an extra 50 for vowels
@@ -174,8 +220,7 @@ void Kordle::setAnswerData() {
 	}
 }
 
-// Converts jamo data of an input into wstring,
-// then checks if the string is in wordList.
+// Checks if input is a legitimate word.
 bool Kordle::validateAnswer() {
 	unsigned short charline[9];
 	for (int i = 0; i < 3; i++) {
@@ -281,17 +326,15 @@ int Kordle::handleInput(int key) {
 	}
 	if (key == 99) {
 		if (_input[tries][2].jamo[1] == -1) {
-			printf("Not a word\n");
 			return 100;
 		}
 		if (validateAnswer()) {
 			checkAnswer();
 			_input[tries][0].aniFrame = 1;
-			tries += 1;
+			updatePlayerData(-1);
 			isTypable = false;
 		}
 		else {
-			printf("Not a word\n");
 			return 101;
 		}
 		return 0;
@@ -573,6 +616,8 @@ int Kordle::handleInput(int key) {
 	return 0;
 }
 
+// Checks if current input is the answer,
+// and sets box colors accordingly.
 void Kordle::checkAnswer() {
 	short tmp;
 	for (int i = 0; i < 3; i++) {
@@ -636,6 +681,8 @@ void Kordle::checkAnswer() {
 	}
 }
 
+// Checks if answer is correct.
+// Switches the value of answerFound accordingly.
 void Kordle::checkAnswerFound() {
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -646,6 +693,7 @@ void Kordle::checkAnswerFound() {
 	}
 	foundAnswer = true;
 }
+
 int Kordle::checkCombinedJamo(int i, int j) {
 	short tmp = _input[tries][i].jamo[j];
 	switch (j) {
@@ -801,8 +849,13 @@ void Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture**
 			}
 			(_input[i][j].aniFrame)++;
 			currentFrame = _input[i][j].aniFrame;
-			if (currentFrame == boxBounceFrames + boxWaitFrames) {
+			if (currentFrame == boxBounceFrames + boxWaitFrames) { // end of animation
 				_input[i][j].aniFrame = -1;
+				if (j == 2) {
+					updatePlayerData(1);
+					popupDelayFrames = 60;
+					delayedPopup = 200;
+				}
 			}
 		}
 		else {
@@ -841,7 +894,7 @@ void Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture**
 						_input[i][j].color[l] = tmpColor[j][l];
 					}
 				}
-				else if (currentFrame == boxFlipFrames) {
+				else if (currentFrame == boxFlipFrames) { // end of animation
 					_input[i][j].aniFrame = -1;
 					if (j == 2) {
 						checkAnswerFound();
@@ -849,8 +902,16 @@ void Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture**
 							_input[i][0].aniFrame = 0;
 						}
 						else {
-							isTypable = true;
-							setAnswerData();
+							if (tries == 6) {
+								// lost game
+								updatePlayerData(0);
+								popupDelayFrames = 60;
+								delayedPopup = 200;
+							}
+							else {
+								isTypable = true;
+								setAnswerData();
+							}
 						}
 					}
 				}

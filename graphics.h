@@ -13,6 +13,7 @@ public:
 
 	SDL_Rect* getMenuRects();
 	SDL_Texture** getBoxSprites();
+	SDL_Texture** getMenuSprites();
 
 	SDL_Window* _window;
 	SDL_Renderer* _renderer;

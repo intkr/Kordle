@@ -1,15 +1,18 @@
 ﻿#include "font.h"
 
+extern char lang;
+
 Font::Font(Graphics* g) {
 	titleFont = TTF_OpenFont("assets/HCRBatang.ttf", 38);
 	boxFont = TTF_OpenFont("assets/MaruBuri.ttf", 38);
 	textFont = TTF_OpenFont("assets/MaruBuri.ttf", 20);
-	WHITE.r = WHITE.g = WHITE.b = WHITE.r = 255;
+	WHITE.r = WHITE.g = WHITE.b = WHITE.a = BLACK.a = 255;
+	BLACK.r = BLACK.g = BLACK.b = 0;
 
-	if (false) {
+	if (lang == 'k') {
 		// kor
-		Uint16 test[5] = { 44544, 51088, 50556, 44396, 0 };
-		titleTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUNICODE_Blended(boxFont, test, WHITE));
+		Uint16 text[5] = { 44544, 51088, 50556, 44396, 0 };
+		titleTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUNICODE_Blended(boxFont, text, WHITE));
 	}
 	else {
 		// eng
@@ -32,8 +35,33 @@ TTF_Font* Font::getTextFont() {
 	return textFont;
 }
 
-SDL_Color* Font::getWHITE() {
-	return &WHITE;
+TTF_Font* Font::getTitleFont() {
+	return titleFont;
+}
+
+void Font::setTextFontSize(int size) {
+	TTF_CloseFont(textFont);
+	if (size > 0) {
+		textFont = TTF_OpenFont("assets/MaruBuri.ttf", size);
+	}
+	else {
+		textFont = TTF_OpenFont("assets/MaruBuri.ttf", 20);
+	}
+}
+
+// returns a pointer of a pre-made SDL_Color.
+// Parameters :
+//  0 = WHITE
+//  1 = BLACK
+SDL_Color* Font::getColor(int n) {
+	switch (n) {
+	case 0:
+		return &WHITE;
+	case 1:
+		return &BLACK;
+	default:
+		return NULL;
+	}
 }
 
 

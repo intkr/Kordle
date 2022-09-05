@@ -19,7 +19,6 @@ public:
 
 	int menuAnimationNo;
 	int popupAnimationNo;
-
 private:
 	int scrWidth;
 	int scrHeight;

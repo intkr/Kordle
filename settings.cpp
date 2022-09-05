@@ -1,5 +1,7 @@
 ﻿#include "settings.h"
 
+char lang = 'u';
+
 Settings::Settings() {
 	int stuff[8] = { 400, 650, 60, 20, -1, 0, -1, -1 };
 	std::wifstream wreader;
@@ -20,6 +22,7 @@ Settings::Settings() {
 	openMenu = stuff[5];
 	menuAnimationNo = stuff[6];
 	popupAnimationNo = stuff[7];
+	//lang = 'k';
 }
 
 Settings::~Settings() {}

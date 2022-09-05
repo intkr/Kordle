@@ -21,8 +21,10 @@ SDL_HitTestResult hitTest(SDL_Window* win, const SDL_Point* area, void* data);
 
 int main(int argc, char** argv) {
 	//printf("%d\n", time(NULL) / 86400);
-	ShowWindow(GetConsoleWindow(), SHOW_OPENWINDOW);
-	//ShowWindow(GetConsoleWindow(), HIDE_WINDOW);	// Don't use this when testing new stuff
+
+	// ShowWindow(GetConsoleWindow(), HIDE_WINDOW);
+	// ShowWindow(GetConsoleWindow(), SHOW_OPENWINDOW);
+	// SDL_RaiseWindow( sdl window* here );
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 	TTF_Init();
 
@@ -48,41 +50,66 @@ int main(int argc, char** argv) {
 
 	SDL_SetWindowHitTest(g->_window, hitTest, mousePos);
 
+	if (!k->getPlayerData(0) && !k->getPlayerData(1)) {
+		k->delayedPopup = 201;
+		k->popupDelayFrames = 0;
+	}
 	while (gameStatus) {
 		frameStartTime = SDL_GetTicks();
 		while (SDL_PollEvent(&_event)) {
 			switch (_event.type) {
 			// mouse stuff
 			case SDL_MOUSEBUTTONDOWN:
-				handle = i->handleClick(i->detectButton(mousePos, 0, g->getMenuRects()));
+				handle = i->handleClick(i->detectButton(mousePos, p->isBigPopOpen ? 2 : s->isMenuOpen() ? 1 : 0, g->getMenuRects()));
 				switch (handle / 100) {
 				case 0:
 					if (gameStatus != 1) break;
 					switch (handle % 100) {
-					case 1:
+					case 1: // Open/close menu
 						s->switchMenuOpen();
 						break;
-					case 2:
+					case 2: // Minimize window
 						SDL_MinimizeWindow(g->_window);
 						break;
-					case 4:
+					case 3: // Open stats popup
+						p->isBigPopOpen = true;
+						p->drawPopup(g, f, k, 200);
+						break;
+					case 4: // Close window
+					{
 						int r[2] = { 0, };
 						SDL_SetWindowHitTest(g->_window, NULL, mousePos);
 						return 0;
+						break;
+					}
+					case 5: // Close popup
+						p->closeBigPopup();
+						break;
+					case 6: // Open help popup
+						p->isBigPopOpen = true;
+						p->drawPopup(g, f, k, 201);
+						break;
+					case 7: // Open settings popup
+						p->isBigPopOpen = true;
+						p->drawPopup(g, f, k, 202);
 						break;
 					}
 					break;
 				}
 				break;
 			case SDL_MOUSEMOTION:
-				handle = i->handleClick(i->detectButton(mousePos, 0, g->getMenuRects()));
+				handle = i->handleClick(i->detectButton(mousePos, p->isBigPopOpen ? 2 : s->isMenuOpen() ? 1 : 0, g->getMenuRects()));
 				switch (handle / 100) {
 				case 0:
 					if (gameStatus != 1) break;
 					switch (handle % 100) {
 					case 1:
 					case 2:
+					case 3:
 					case 4:
+					case 5:
+					case 6:
+					case 7:
 						_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
 						SDL_SetCursor(_cursor);
 						break;
@@ -118,12 +145,12 @@ int main(int argc, char** argv) {
 						if (handle >= 100) {
 							// popup
 							if (handle >= 200) {
-								p->bigPopFrames = s->getFPS() * 3;
+								p->isBigPopOpen = true;
 							}
 							else {
 								p->smallPopFrames = s->getFPS() * 3;
 							}
-							p->drawPopup(g, f, handle);
+							p->drawPopup(g, f, k, handle);
 							k->drawText(f, g->_renderer, 0);
 						}
 						else {
@@ -132,6 +159,18 @@ int main(int argc, char** argv) {
 					}
 				}
 				break;
+			}
+		}
+		
+		// temporary way to trigger popups
+		if (k->popupDelayFrames) {
+			k->popupDelayFrames--;
+		}
+		else {
+			if (k->delayedPopup) {
+				p->isBigPopOpen = true;
+				p->drawPopup(g, f, k, k->delayedPopup);
+				k->delayedPopup = 0;
 			}
 		}
 		SDL_GetMouseState(&mousePos[0], &mousePos[1]);

@@ -21,13 +21,16 @@ public:
 
 class Kordle {
 public:
-	Kordle();
+	Kordle(Graphics* g, Font* f);
 	~Kordle();
 	void renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture** box, short* data);
-	void renderText(SDL_Texture* _texture, SDL_Renderer* _renderer, SDL_Rect* dstRect, short* data, short* data2);
+	void renderText(SDL_Texture* _texture, SDL_Renderer* _renderer, Font* f, SDL_Rect* dstRect, short* data, short* data2);
 	void renderGame(Font* f, Graphics* g);
 	void drawText(Font* f, SDL_Renderer* _renderer, int type);
+	void redrawText(Font* f, SDL_Renderer* _renderer, int i);
 	int handleInput(int key);
+	void reset(Font* f, SDL_Renderer* _renderer);
+	void saveData();
 
 	// 10~15 : gamesWon		0 : tries
 	// 1 : playedGames		2 : maxStreak

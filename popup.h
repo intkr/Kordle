@@ -6,25 +6,33 @@
 #include "kordle.h"
 #include "graphics.h"
 #include "font.h"
+#include "controls.h"
 
 class Popup {
 public:
-	Popup();
+	Popup(Graphics* g);
 	~Popup();
 	void drawPopup(Graphics* g, Font* f, Kordle* k, int code);
 	void renderPopup(Graphics* g);
 	void closeBigPopup();
+	void reset();
+	void reset2(Graphics* g, Font* f, Kordle* k);
 
+	void updateSwitch(int n);
+
+	Controls* _controls;
 	SDL_Texture* bigPopTexture; // screen-wide popup
 	SDL_Texture* smallPopTexture; // small popup
 	int smallPopFrames;
-	bool isBigPopOpen;
+	int openedBigPop;
 private:
 	void drawSmallPopup(Graphics* g, Font* f, int code);
 	void drawBigPopup(Graphics* g, Font* f, Kordle* k, int code);
-	void roundSmallPopup(Graphics* g, SDL_Texture* t);
+	void roundTexture(Graphics* g, SDL_Texture* t, int base);
 
 	void renderBigText(Graphics* g, Font* f, int x, int y, int unicode);
+	void renderUNICODE(Graphics* g, Font* f, int x, int y, Uint16* text);
+	void renderUTF8(Graphics* g, Font* f, int x, int y, const char* text);
 	
 	// check if it's -1. if so, popup was just triggered; set it to 10
 	// for each frame after, decrease it steadily until it reaches 0
@@ -34,4 +42,7 @@ private:
 	SDL_Texture* tmpTexture;
 	SDL_Surface* tmpSurface;
 	SDL_Rect tmpRect;
+
+	Uint8 smallPopColor;
+	Uint8 bigPopColor;
 };

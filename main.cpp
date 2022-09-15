@@ -18,13 +18,18 @@
 */
 
 SDL_HitTestResult hitTest(SDL_Window* win, const SDL_Point* area, void* data);
+void redraw(Settings* s, Graphics* g, Font* f, Input* i, Kordle* k, Popup* p);
+
+extern char lang;
+extern bool isDarkMode;
+
+// console	: int main(int argc, char** argv)
+// windows	: INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 
 int main(int argc, char** argv) {
+	ShowWindow(GetConsoleWindow(), SHOW_OPENWINDOW);
 	//printf("%d\n", time(NULL) / 86400);
-
-	// ShowWindow(GetConsoleWindow(), HIDE_WINDOW);
-	// ShowWindow(GetConsoleWindow(), SHOW_OPENWINDOW);
-	// SDL_RaiseWindow( sdl window* here );
+	// 
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 	TTF_Init();
 
@@ -32,15 +37,12 @@ int main(int argc, char** argv) {
 	Graphics* g = new Graphics(s);
 	Font* f = new Font(g);
 	Input* i = new Input();
-	Kordle* k = new Kordle();
-	Popup* p = new Popup();
+	Kordle* k = new Kordle(g, f);
+	Popup* p = new Popup(g);
 
 	SDL_Event _event;
 
-	int winWidth = GetSystemMetrics(SM_CXSCREEN);
-	int winHeight = GetSystemMetrics(SM_CYSCREEN);
 	int gameStatus = 1;
-	bool mouseDown = false;
 	int mousePos[2] = { 0, };
 	unsigned int frameStartTime;
 	int frameSleepTime = 0;
@@ -58,71 +60,121 @@ int main(int argc, char** argv) {
 		frameStartTime = SDL_GetTicks();
 		while (SDL_PollEvent(&_event)) {
 			switch (_event.type) {
-			// mouse stuff
+				// mouse stuff
 			case SDL_MOUSEBUTTONDOWN:
-				handle = i->handleClick(i->detectButton(mousePos, p->isBigPopOpen ? 2 : s->isMenuOpen() ? 1 : 0, g->getMenuRects()));
+				if (p->openedBigPop) {
+					handle = i->detectButton(mousePos, 2, g->getMenuRects());
+					if (handle == -1 && p->openedBigPop == 202) {
+						// settings popup specifically
+						handle = p->_controls->detectSwitch(mousePos);
+					}
+				}
+				else if (s->isMenuOpen()) {
+					// menu
+					handle = i->detectButton(mousePos, 1, g->getMenuRects());
+				}
+				else {
+					// game
+					handle = i->detectButton(mousePos, 0, g->getMenuRects());
+				}
 				switch (handle / 100) {
 				case 0:
 					if (gameStatus != 1) break;
 					switch (handle % 100) {
-					case 1: // Open/close menu
+					case 0: // Open/close menu
 						s->switchMenuOpen();
 						break;
-					case 2: // Minimize window
-						SDL_MinimizeWindow(g->_window);
-						break;
-					case 3: // Open stats popup
-						p->isBigPopOpen = true;
-						p->drawPopup(g, f, k, 200);
-						break;
-					case 4: // Close window
+					case 1: // Close window
 					{
 						int r[2] = { 0, };
 						SDL_SetWindowHitTest(g->_window, NULL, mousePos);
 						return 0;
 						break;
 					}
-					case 5: // Close popup
-						p->closeBigPopup();
-						break;
-					case 6: // Open help popup
-						p->isBigPopOpen = true;
+					case 2: // Open help popup
+						p->openedBigPop = 201;
 						p->drawPopup(g, f, k, 201);
 						break;
-					case 7: // Open settings popup
-						p->isBigPopOpen = true;
+					case 3: // Open stats popup
+						p->openedBigPop = 200;
+						p->drawPopup(g, f, k, 200);
+						break;
+					case 4: // Open settings popup
+						p->openedBigPop = 202;
 						p->drawPopup(g, f, k, 202);
+						break;
+					case 5: // Minimize window
+						SDL_MinimizeWindow(g->_window);
+						break;
+					case 6: // Close popup
+						p->closeBigPopup();
+						break;
+					case 10:
+						if (isDarkMode)
+							isDarkMode = false;
+						else
+							isDarkMode = true;
+						redraw(s, g, f, i, k, p);
+						s->saveSettings();
+						k->saveData();
+						break;
+					case 11:
+						if (lang == 'k')
+							lang = 'u';
+						else
+							lang = 'k';
+						redraw(s, g, f, i, k, p);
+						s->saveSettings();
+						k->saveData();
+						break;
+					case 12:
+						if (s->debugMode) {
+							ShowWindow(GetConsoleWindow(), SW_HIDE);
+							s->debugMode = false;
+						}
+						else {
+							ShowWindow(GetConsoleWindow(), SW_NORMAL);
+							SDL_RaiseWindow(g->_window);
+							s->debugMode = true;
+						}
+						s->saveSettings();
+						k->saveData();
 						break;
 					}
 					break;
 				}
 				break;
 			case SDL_MOUSEMOTION:
-				handle = i->handleClick(i->detectButton(mousePos, p->isBigPopOpen ? 2 : s->isMenuOpen() ? 1 : 0, g->getMenuRects()));
+				if (p->openedBigPop) {
+					handle = i->detectButton(mousePos, 2, g->getMenuRects());
+					if (handle == -1 && p->openedBigPop == 202) {
+						// settings popup specifically
+						handle = p->_controls->detectSwitch(mousePos);
+					}
+				}
+				else if (s->isMenuOpen()) {
+					// menu
+					handle = i->detectButton(mousePos, 1, g->getMenuRects());
+				}
+				else {
+					// game
+					handle = i->detectButton(mousePos, 0, g->getMenuRects());
+				}
 				switch (handle / 100) {
 				case 0:
 					if (gameStatus != 1) break;
-					switch (handle % 100) {
-					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-					case 6:
-					case 7:
+					if (handle > -1) {
 						_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
 						SDL_SetCursor(_cursor);
-						break;
-					case -1:
-					default:
+					}
+					else {
 						_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 						SDL_SetCursor(_cursor);
-						break;
 					}
 					break;
 				}
 				break;
-			// key stuff
+				// key stuff
 			case SDL_KEYDOWN:
 				key = i->handleKey(_event.key.keysym.sym, (SDL_Keymod)_event.key.keysym.mod);
 				if (key == -1) {
@@ -143,9 +195,14 @@ int main(int argc, char** argv) {
 					if (k->isTypable) {
 						handle = k->handleInput(key);
 						if (handle >= 100) {
+							if (handle == 999) {
+								// save
+								k->saveData();
+								break;
+							}
 							// popup
 							if (handle >= 200) {
-								p->isBigPopOpen = true;
+								p->openedBigPop = 200;
 							}
 							else {
 								p->smallPopFrames = s->getFPS() * 3;
@@ -161,14 +218,14 @@ int main(int argc, char** argv) {
 				break;
 			}
 		}
-		
+
 		// temporary way to trigger popups
 		if (k->popupDelayFrames) {
 			k->popupDelayFrames--;
 		}
 		else {
 			if (k->delayedPopup) {
-				p->isBigPopOpen = true;
+				p->openedBigPop = k->delayedPopup;
 				p->drawPopup(g, f, k, k->delayedPopup);
 				k->delayedPopup = 0;
 			}
@@ -204,9 +261,18 @@ SDL_HitTestResult hitTest(SDL_Window* win, const SDL_Point* area, void* data) {
 	int* pos = (int*)data;
 	short test = GetAsyncKeyState(VK_LBUTTON);
 	if (test != 0) {
-		if ((pos[1] <= 50) && (pos[0] > 34) && (pos[0] < 335)) {
+		if ((pos[1] <= 50 ) && (pos[0] > 34 ) && (pos[0] < 335 )) {
 			r = SDL_HITTEST_DRAGGABLE;
 		}
 	}
 	return r;
+}
+
+void redraw(Settings* s, Graphics* g, Font* f, Input* i, Kordle* k, Popup* p) {
+	g->reset(s);
+	f->reset(g);
+	p->_controls->reset(g);
+	p->reset();			// color
+	p->reset2(g, f, k); // popup
+	k->reset(f, g->_renderer);
 }

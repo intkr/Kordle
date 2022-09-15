@@ -6,7 +6,6 @@
 class Input {
 public:
 	int detectButton(int* pos, int status, SDL_Rect rects[7]);
-	int handleClick(int btn);
 	int handleKey(SDL_Keycode key, SDL_Keymod mod);
 
 private:

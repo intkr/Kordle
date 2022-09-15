@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="controls.cpp" />
     <ClCompile Include="kordle.cpp" />
     <ClCompile Include="graphics.cpp" />
     <ClCompile Include="input.cpp" />
@@ -154,6 +155,7 @@
     <ClCompile Include="font.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="controls.h" />
     <ClInclude Include="kordle.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="input.h" />

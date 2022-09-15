@@ -1,31 +1,51 @@
 ﻿#include "settings.h"
 
-char lang = 'u';
+char lang = 'k'; // k : 107, u : 117
+bool isDarkMode = true;
 
 Settings::Settings() {
-	int stuff[8] = { 400, 650, 60, 20, -1, 0, -1, -1 };
-	std::wifstream wreader;
-	std::wstring wline;
-	wreader.open("assets/settings.txt", std::wifstream::in);
-	if (wreader.good()) {
+	int stuff[6] = { 60, 20, 107, 1, 1, 0};
+	std::ifstream reader;
+	std::string line;
+	reader.open("assets/settings.txt", std::ifstream::in);
+	if (reader.good()) {
 		// Apply settings from save file
 		for (int i = 0; i < _countof(stuff); i++) {
-			std::getline(wreader, wline);
-			stuff[i] = _wtoi(wline.c_str());
+			std::getline(reader, line);
+			stuff[i] = atoi(line.c_str());
 		}
 	}
-	scrWidth = stuff[0];
-	scrHeight = stuff[1];
-	fps = stuff[2];
-	iconSize = stuff[3];
-	openPopup = stuff[4];
-	openMenu = stuff[5];
-	menuAnimationNo = stuff[6];
-	popupAnimationNo = stuff[7];
-	//lang = 'k';
+	fps = stuff[0];
+	iconSize = stuff[1];
+	lang = stuff[2];
+	isDarkMode = stuff[3];
+	debugMode = stuff[4];
+	lastDay = stuff[5];
+
+	openMenu = false;
+	menuAnimationNo = -1;
+	popupAnimationNo = -1;
+
+	reader.close();
 }
 
 Settings::~Settings() {}
+
+void Settings::saveSettings() {
+	// settings.txt
+	int stuff[6] = { fps, iconSize, lang, isDarkMode, debugMode, lastDay };
+	char tmp[6] = { 0, };
+	std::ofstream writer;
+	writer.open("assets/settings.txt", std::ofstream::out);
+	if (writer.good()) {
+		for (int i = 0; i < _countof(stuff); i++) {
+			_itoa_s(stuff[i], tmp, 10);
+			writer.write(tmp, strlen(tmp));
+			writer.write("\n\0", strlen("\n\0"));
+		}
+		
+	}
+}
 
 int Settings::getFPS() {
 	return fps;
@@ -35,28 +55,11 @@ int Settings::getIconSize() {
 	return iconSize;
 }
 
-int Settings::getScrHeight() {
-	return scrHeight;
-}
-
-int Settings::getScrWidth() {
-	return scrWidth;
-}
-
 bool Settings::isMenuOpen() {
 	return openMenu;
 }
 
-int Settings::getOpenPopup() {
-	return openPopup;
-}
-
-// Refer to notes.txt for return value details
-void Settings::setOpenPopup(int n) {
-	openPopup = n;
-}
-
-// Switches the boolean 'openMenu',
+// Controls the boolean 'openMenu',
 // and sets the frame number for the menu moving animation.
 void Settings::switchMenuOpen() {
 	if (openMenu) {

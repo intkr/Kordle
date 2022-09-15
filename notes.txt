@@ -5,28 +5,22 @@
 			separated characters of compound characters
 			^ think about this more later
 
-	find a better example for the 'help' popup
-	and fix the lazy part
+	make day check system
 
-	settings popup
-		- color scheme	[switch]		(light / dark)
-		- screen size	[button]		(0.75x / 1x / 1.5x)				<< need to add a variable on Settings / data on save.txt
-		- language		[button]		("한국어" or "English")
-		- debug mode	[switch]		(on / off)
-		- contacts		[text]			(khu email)
-		- save button at bottom right
+	rewrite Controls::drawTextures because they do be fugly rn
 
-	stats popup
-		- add time until next wordle
-		"(hh:mm:ss) until next Kordle" or "다음 단어까지 (hh:mm:ss)"
+	add shadow on popup
 
-	if game is unfinished (0 < tries < 6) and the day passes, count it as a lost game
+	time stuff
+		stats popup
+			- add time until next wordle
+			"(hh:mm:ss) until next Kordle" or "다음 단어까지 (hh:mm:ss)"
+		if game is unfinished (0 < tries < 6) and the day passes, count it as a lost game
 
 	Tooltip support / full keyboard support / random typing support
-	korean/english language support (extern char lang)
 	Additional support to unfortunate individiuals whose shift keys don't work lol
 	---
-	Show 'help' popup on startup if gamesPlayed = 0 and tries = 0
+	add small animation of blank box bouncing effect when a character is input
 
 	save system (save every valid Enter input)
 
@@ -45,9 +39,15 @@ Screen
 	each box is 60x60
 	gaps are 10 pixels wide
 
-	Blank box / Wrong letter : 58, 58, 60 (edge of blank box has a thickness of 2 pixels)
+	Blank box / Wrong letter : 58, 58, 60 (Dark mode) / 234, 235, 237 << only for blank box (edge of blank box has a thickness of 2 pixels)
 	Wrong spot : 174, 159, 77
 	Correct spot : 101, 139, 85
+
+	Title text : 255, 255, 255	(Dark mode) / 128, 128, 128		(Light mode)
+	Normal text: 255, 255, 255	(Dark mode) / 55, 55, 55		(Light mode)
+	Game text  : 255, 255, 255	(Dark mode) / 0, 0, 0			(Light mode)
+	BG : 18, 18, 19				(Dark mode) / 255, 255, 255		(Light mode)
+	Icon color : 235, 235, 235	(Dark mode) / 0, 0, 0			(Light mode)
 
 Variables
 	gameStatus (main.cpp)
@@ -87,18 +87,10 @@ Button codes
 	5 : Minimize
 	6 : Close (Popup)
 	10 : Color scheme (Settings)
-	11 : Screen size (Settings)
-	12 : Language (Settings)
-	13 : Debug mode (Settings)
+	11 : Language (Settings)
+	12 : Debug mode (Settings)
+	13 : Screen size (Settings) 
 	14 : Save (Settings)
-
-Click handles
-   -1 : None
-	1 : Menu button, switch s->openMenu
-	2 : Minimize button, minimize game
-	3 : Stat button, open stat popup
-	4 : Close button, close game
-	5 : Close button, close popup
 
 Colors
 	0 : Default
@@ -181,13 +173,16 @@ data.txt
 	gamesWon[0]
 	...
 	gamesWon[5]
+	_input[0][0].jamo[0] * 588 + .jamo[1] * 28 + .jamo[2] + 44032
+	_input[0][1]
+	...
+	_input[5][1]
+	_input[5][2] (...)			<< if blank _input[], put 0 instead
 
 settings.txt
-	scrWidth
-	scrHeight
-	fps
+	fps	// not actually fps, default 60; changing value changes game speed
 	iconSize
-	openPopup
-	openMenu
-	menuAnimationNo
-	popupAnimationNo
+	lang
+	isDarkMode
+	debugMode
+	lastDay

@@ -1,6 +1,9 @@
 ﻿#include "kordle.h"
 
-Kordle::Kordle() {
+extern char lang;
+extern bool isDarkMode;
+
+Kordle::Kordle(Graphics* g, Font* f) {
 	popupDelayFrames = 0;
 	delayedPopup = 0;
 	rk = -1;
@@ -17,7 +20,7 @@ Kordle::Kordle() {
 			answer[i][j / 2] = 0;
 		}
 	}
-	int tmp[10] = { 0, };
+	int tmp[28] = { 0, };
 	std::wifstream wreader;
 	std::wstring wline;
 
@@ -26,6 +29,7 @@ Kordle::Kordle() {
 		std::getline(wreader, wline);
 		wordList.insert(wline);
 	}
+	wreader.close();
 
 	wreader.open("assets/data.txt", std::wifstream::in);
 	if (wreader.good()) {
@@ -58,15 +62,18 @@ Kordle::Kordle() {
 	else {
 		winrate = 0;
 	}
+
 	if (tries == 6) isTypable = false;
 	else isTypable = true;
+
+
 	wreader.open("assets/answer.csv", std::wifstream::in);
 	bool flag = false;
 	if (wreader.good()) {
 		// skip previous answers
 
 		//(signed int)time(NULL) / 86400 - releaseDateUNIX - 1
-		for (int i = 0; i <= -1; i++) {
+		for (int i = 0; i <= (signed int)time(NULL) / 86400 - releaseDateUNIX - 1; i++) {
 			std::getline(wreader, wline);
 		}
 		// actual line containing today's answer
@@ -115,8 +122,37 @@ Kordle::Kordle() {
 		answer[2][1] = 0;
 		answer[2][2] = 16;
 	}
-	wreader.close();
+
 	setAnswerData();
+
+	for (int i = 0; i < 6; i++) {
+		for (int j = 0; j < 3; j++) {
+			if (tmp[10 + i * 3 + j] == 0) continue;
+			tmp[10 + i * 3 + j] -= 44032;
+			_input[i][j].jamo[0] = tmp[10 + i * 3 + j] / 588;
+			_input[i][j].jamo[1] = (tmp[10 + i * 3 + j] % 588) / 28;
+			_input[i][j].jamo[2] = tmp[10 + i * 3 + j] % 28;
+		}
+	}
+
+	if (tries > 0) {
+		unsigned int tmpTries = tries;
+		for (unsigned int i = 0; i < tmpTries; i++) {
+			tries = i;
+			checkAnswer();
+			//_input[i][0].aniFrame = 1;
+			for (int j = 0; j < 3; j++) {
+				for (int k = 0; k < 3; k++) {
+					_input[i][j].color[k] = tmpColor[j][k];
+				}
+			}
+			setAnswerData();
+		}
+		tries = tmpTries;
+		reset(f, g->_renderer);
+	}
+
+	wreader.close();
 }
 
 Kordle::~Kordle() {
@@ -125,6 +161,30 @@ Kordle::~Kordle() {
 			SDL_DestroyTexture(textTexture[i][j]);
 		}
 	}
+}
+
+void Kordle::saveData() {
+	int stuff[28] = { (int)tries, (int)playedGames, (int)maxStreak, (int)currentStreak, 0, };
+	char tmp[6] = { 0, };
+
+	for (int i = 0; i < 6; i++) {
+		stuff[4 + i] = gamesWon[i];
+		if (_input[i][0].jamo[0] == -1) continue;
+		for (int j = 0; j < 3; j++) {
+			stuff[10 + i * 3 + j] = _input[i][j].jamo[0] * 588 + _input[i][j].jamo[1] * 28 + _input[i][j].jamo[2] + 44032;
+		}
+	}
+
+	std::ofstream writer;
+	writer.open("assets/data.txt", std::ofstream::out);
+	if (writer.good()) {
+		for (int i = 0; i < _countof(stuff); i++) {
+			_itoa_s(stuff[i], tmp, 10);
+			writer.write(tmp, strlen(tmp));
+			writer.write("\n\0", strlen("\n\0"));
+		}
+	}
+	writer.close();
 }
 
 void Kordle::updatePlayerData(int n) {
@@ -325,6 +385,7 @@ int Kordle::handleInput(int key) {
 		return -1;
 	}
 	if (key == 99) {
+		// enter
 		if (_input[tries][2].jamo[1] == -1) {
 			return 100;
 		}
@@ -337,7 +398,7 @@ int Kordle::handleInput(int key) {
 		else {
 			return 101;
 		}
-		return 0;
+		return 999;
 	}
 	if (rk == -1) {
 		if (key < 20) {
@@ -682,7 +743,7 @@ void Kordle::checkAnswer() {
 }
 
 // Checks if answer is correct.
-// Switches the value of answerFound accordingly.
+// Controls the value of answerFound accordingly.
 void Kordle::checkAnswerFound() {
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -805,21 +866,22 @@ void Kordle::renderGame(Font* f, Graphics* g) {
 	short data2[2];
 	for (int i = 0; i < 6; i++) {
 		for (int j = 0; j < 3; j++) {
-			boxRect.x = 100 + j * 70;
+			boxRect.x = (100 + j * 70);
 			data[0] = i;
 			data[1] = j;
 			for (int k = 0; k < 3; k++) {
-				boxRect.y = 100 + i * 70;
+				boxRect.y = (100 + i * 70);
 				data[2] = k;
 				renderBox(g->_renderer, &boxRect, g->getBoxSprites(), data);
 			}
 
-			boxRect.y = 100 + i * 70;
+			boxRect.y = (100 + i * 70);
 			for (int k = 0; k < 3; k++) {
 				data[k] = _input[i][j].jamo[k];
 			}
 			data2[0] = i, data2[1] = j;
-			renderText(textTexture[i][j], g->_renderer, &boxRect, data, data2);
+			if (textTexture[i][j] != NULL)
+				renderText(textTexture[i][j], g->_renderer, f, &boxRect, data, data2);
 		}
 		
 	}
@@ -865,11 +927,11 @@ void Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture**
 			if (_input[i][j].color[k] != 0) {
 				if ((currentFrame) <= boxFlipFrames / 2) {
 					dstRect->h = (dstRect->h - (int)(((float)120 / boxFlipFrames) * (currentFrame))) / 3;
-					dstRect->y += (int)(((float)60 / boxFlipFrames) * (currentFrame)) + dstRect->h * k;
+					dstRect->y += ((int)(((float)60 / boxFlipFrames) * (currentFrame)) + dstRect->h * k);
 				}
 				else {
 					dstRect->h = (dstRect->h - (int)(((float)120 / boxFlipFrames) * (boxFlipFrames - (currentFrame)))) / 3;
-					dstRect->y += (int)(((float)60 / boxFlipFrames) * (boxFlipFrames - (currentFrame))) + dstRect->h * k;
+					dstRect->y += ((int)(((float)60 / boxFlipFrames) * (boxFlipFrames - (currentFrame))) + dstRect->h * k);
 				}
 			}
 			else {
@@ -930,13 +992,12 @@ void Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture**
 	}
 }
 
-void Kordle::renderText(SDL_Texture* _texture, SDL_Renderer* _renderer, SDL_Rect* dstRect, short* data, short* data2) {
-	dstRect->w = dstRect->h = 60;
+void Kordle::renderText(SDL_Texture* _texture, SDL_Renderer* _renderer, Font* f, SDL_Rect* dstRect, short* data, short* data2) {
 	if (textTexture == NULL) return;
 
 	SDL_QueryTexture(textTexture[data2[0]][data2[1]], NULL, NULL, &(dstRect->w), &(dstRect->h));
-	dstRect->x += (60 - dstRect->w) / 2;
-	dstRect->y += (60 - dstRect->h) / 2 - 2;
+	dstRect->x += (60  - dstRect->w) / 2;
+	dstRect->y += (60  - dstRect->h) / 2 - 2;
 	short currentFrame = _input[data2[0]][data2[1]].aniFrame;
 
 	if (currentFrame != -1) {
@@ -956,6 +1017,9 @@ void Kordle::renderText(SDL_Texture* _texture, SDL_Renderer* _renderer, SDL_Rect
 			if (currentFrame <= boxFlipFrames / 2) {
 				dstRect->h -= (int)(((float)120 / boxFlipFrames) * currentFrame);
 				dstRect->y += (int)(((float)60 / boxFlipFrames) * currentFrame);
+				if (currentFrame == boxFlipFrames / 2) {
+					redrawText(f, _renderer, data2[1]);
+				}
 			}
 			else {
 				dstRect->h -= (int)(((float)120 / boxFlipFrames) * (boxFlipFrames - currentFrame));
@@ -972,11 +1036,26 @@ void Kordle::drawText(Font* f, SDL_Renderer* _renderer, int type) {
 	if (!type) return;
 	int rk = findRK();
 	SDL_DestroyTexture(textTexture[tries][rk / 3]);
-	textTexture[tries][rk / 3] = f->getLetterTexture(textTexture[tries][rk / 3], _renderer, _input[tries][rk / 3].jamo);
+	textTexture[tries][rk / 3] = f->getLetterTexture(textTexture[tries][rk / 3], _renderer, _input[tries][rk / 3].jamo, _input[tries][rk / 3].color[0] ? 1 : 0);
 	if (rk >= 3 && type == 1) {
-		textTexture[tries][rk / 3 - 1] = f->getLetterTexture(textTexture[tries][rk / 3 - 1], _renderer, _input[tries][rk / 3 - 1].jamo);
+		textTexture[tries][rk / 3 - 1] = f->getLetterTexture(textTexture[tries][rk / 3 - 1], _renderer, _input[tries][rk / 3 - 1].jamo, _input[tries][rk / 3].color[0] ? 1 : 0);
 	}
 	else if (rk < 9 && type == -1) {
-		textTexture[tries][rk / 3 + 1] = f->getLetterTexture(textTexture[tries][rk / 3 + 1], _renderer, _input[tries][rk / 3 + 1].jamo);
+		textTexture[tries][rk / 3 + 1] = f->getLetterTexture(textTexture[tries][rk / 3 + 1], _renderer, _input[tries][rk / 3 + 1].jamo, _input[tries][rk / 3].color[0] ? 1 : 0);
+	}
+}
+
+void Kordle::redrawText(Font* f, SDL_Renderer* _renderer, int i) {
+	SDL_DestroyTexture(textTexture[tries - 1][i]);
+	textTexture[tries - 1][i] = f->getLetterTexture(textTexture[tries - 1][i], _renderer, _input[tries - 1][i].jamo, _input[tries - 1][i].color[0] ? 1 : 0);
+}
+
+void Kordle::reset(Font* f, SDL_Renderer* _renderer) {
+	// redraw all box texts
+	for (int i = 0; i < 6; i++) {
+		for (int j = 0; j < 3; j++) {
+			SDL_DestroyTexture(textTexture[i][j]);
+			textTexture[i][j] = f->getLetterTexture(textTexture[i][j], _renderer, _input[i][j].jamo, _input[i][j].color[0] ? 1 : 0);
+		}
 	}
 }

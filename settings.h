@@ -8,22 +8,18 @@ public:
 	Settings();
 	~Settings();
 
-	int getScrWidth();
-	int getScrHeight();
+	void saveSettings();
 	int getFPS();
 	int getIconSize();
-	int getOpenPopup();
 	bool isMenuOpen();
-	void setOpenPopup(int n);
 	void switchMenuOpen();
 
 	int menuAnimationNo;
 	int popupAnimationNo;
+	bool debugMode;
 private:
-	int scrWidth;
-	int scrHeight;
 	int fps;
 	int iconSize;
-	int openPopup;
 	bool openMenu;
+	int lastDay;
 };

@@ -3,9 +3,15 @@
 // Button click detection system.
 // Hitboxes are defined in menuRect (in graphics.h).
 // Refer to 'Button codes' in notes.txt for details.
+
+extern char lang;
+extern bool isDarkMode;
+
 int Input::detectButton(int* pos, int status, SDL_Rect rects[7]) {
 	int btnCode = -1;
 	switch (status) {
+	case 3: // Settings Popup
+
 	case 2: // Popup
 		if (isMouseInRect(pos, &rects[6])) {
 			btnCode = 6;
@@ -29,30 +35,6 @@ int Input::detectButton(int* pos, int status, SDL_Rect rects[7]) {
 		}
 	}
 	return btnCode;
-}
-
-// Returns a code number based on the clicked button.
-// Refer to 'Click handles' in notes.txt for details.
-int Input::handleClick(int btn) {
-	switch (btn) {
-	case 0:
-		return 1;
-	case 1:
-		return 4;
-	case 2:
-		return 6;
-	case 3:
-		return 3;
-	case 4:
-		return 7;
-	case 5:
-		return 2;
-	case 6:
-		return 5;
-	default:
-		// No buttons are pressed
-		return -1;
-	}
 }
 
 // Returns a number corresponding to keys on the physical keyboard.

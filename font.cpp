@@ -1,24 +1,51 @@
 ﻿#include "font.h"
 
 extern char lang;
+extern bool isDarkMode;
 
+/* 12pt = 16px
+*/
 Font::Font(Graphics* g) {
-	titleFont = TTF_OpenFont("assets/HCRBatang.ttf", 38);
-	boxFont = TTF_OpenFont("assets/MaruBuri.ttf", 38);
-	textFont = TTF_OpenFont("assets/MaruBuri.ttf", 20);
-	WHITE.r = WHITE.g = WHITE.b = WHITE.a = BLACK.a = 255;
-	BLACK.r = BLACK.g = BLACK.b = 0;
+	titleFont = TTF_OpenFont("assets/HCRBatang.ttf", 38 );
+	boxFont = TTF_OpenFont("assets/MaruBuri.ttf", 38 );
+	textFont = TTF_OpenFont("assets/MaruBuri.ttf", 20 );
+	reset(g);
+	textSurface = NULL;
+}
+
+void Font::reset(Graphics* g) {
+	setTextFontSize(-1);
+	if (isDarkMode) {
+		titleColor.r = titleColor.g = titleColor.b = titleColor.a = 255;
+		defaultGameColor.r = defaultGameColor.g = defaultGameColor.b = defaultGameColor.a = 255;
+		textColor.r = textColor.g = textColor.b = textColor.a = 255;
+		inverseColor.r = inverseColor.g = inverseColor.b = 0, inverseColor.a = 255;
+	}
+	else {
+		titleColor.r = titleColor.g = titleColor.b = 0, titleColor.a = 255;
+		defaultGameColor.r = defaultGameColor.g = defaultGameColor.b = 0, defaultGameColor.a = 255;
+		textColor.r = textColor.g = textColor.b = 55, textColor.a = 255;
+		inverseColor.r = inverseColor.g = inverseColor.b = inverseColor.a = 255;
+	}
+	coloredGameColor.r = coloredGameColor.g = coloredGameColor.b = coloredGameColor.a = 255;
 
 	if (lang == 'k') {
 		// kor
 		Uint16 text[5] = { 44544, 51088, 50556, 44396, 0 };
-		titleTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUNICODE_Blended(boxFont, text, WHITE));
+		SDL_FreeSurface(textSurface);
+		SDL_DestroyTexture(titleTexture);
+		textSurface = TTF_RenderUNICODE_Blended(boxFont, text, titleColor);
+		titleTexture = SDL_CreateTextureFromSurface(g->_renderer, textSurface);
+		SDL_FreeSurface(textSurface);
 	}
 	else {
 		// eng
-		titleTexture = SDL_CreateTextureFromSurface(g->_renderer, TTF_RenderUTF8_Blended(boxFont, "Kordle", WHITE));
+		SDL_FreeSurface(textSurface);
+		SDL_DestroyTexture(titleTexture);
+		textSurface = TTF_RenderUTF8_Blended(boxFont, "Kordle", titleColor);
+		titleTexture = SDL_CreateTextureFromSurface(g->_renderer, textSurface);
+		SDL_FreeSurface(textSurface);
 	}
-	textSurface = NULL;
 }
 
 Font::~Font() {
@@ -42,23 +69,25 @@ TTF_Font* Font::getTitleFont() {
 void Font::setTextFontSize(int size) {
 	TTF_CloseFont(textFont);
 	if (size > 0) {
-		textFont = TTF_OpenFont("assets/MaruBuri.ttf", size);
+		textFont = TTF_OpenFont("assets/MaruBuri.ttf", size );
 	}
 	else {
-		textFont = TTF_OpenFont("assets/MaruBuri.ttf", 20);
+		textFont = TTF_OpenFont("assets/MaruBuri.ttf", 20 );
 	}
 }
 
-// returns a pointer of a pre-made SDL_Color.
-// Parameters :
-//  0 = WHITE
-//  1 = BLACK
 SDL_Color* Font::getColor(int n) {
 	switch (n) {
 	case 0:
-		return &WHITE;
+		return &titleColor;
 	case 1:
-		return &BLACK;
+		return &defaultGameColor;
+	case 2:
+		return &coloredGameColor;
+	case 3:
+		return &textColor;
+	case 4:
+		return &inverseColor;
 	default:
 		return NULL;
 	}
@@ -68,7 +97,9 @@ SDL_Color* Font::getColor(int n) {
 // Takes 3 numbers to get the unicode value for the corresponding Korean letter,
 // then returns a SDL_Texture* containing a render of said letter.
 // * jamo must be short[3].
-SDL_Texture* Font::getLetterTexture(SDL_Texture* _texture, SDL_Renderer* _renderer, short* jamo) {
+//
+// very scuffed but it works
+SDL_Texture* Font::getLetterTexture(SDL_Texture* _texture, SDL_Renderer* _renderer, short* jamo, bool isColored) {
 	SDL_DestroyTexture(_texture);
 	Uint16 text[2] = { 0, };
 	if (jamo[0] == -1) {
@@ -83,7 +114,12 @@ SDL_Texture* Font::getLetterTexture(SDL_Texture* _texture, SDL_Renderer* _render
 		// Has a syllable to render
 		text[0] = 44032 + jamo[0] * 588 + jamo[1] * 28 + jamo[2];
 	}
-	textSurface = TTF_RenderUNICODE_Blended(titleFont, text, WHITE);
+	if (isColored) {
+		textSurface = TTF_RenderUNICODE_Blended(titleFont, text, coloredGameColor);
+	}
+	else {
+		textSurface = TTF_RenderUNICODE_Blended(titleFont, text, defaultGameColor);
+	}
 	_texture = SDL_CreateTextureFromSurface(_renderer, textSurface);
 	SDL_FreeSurface(textSurface);
 	return _texture;

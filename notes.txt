@@ -1,34 +1,25 @@
 ﻿Todo
+
+	
 	fix algorithm problems
 		- problem example : '닭고기' and '경희대'
 			- probably need a new array containing
 			separated characters of compound characters
 			^ think about this more later
 
-	make day check system
-
-	rewrite Controls::drawTextures because they do be fugly rn
-
-	add shadow on popup
-
-	time stuff
-		stats popup
-			- add time until next wordle
-			"(hh:mm:ss) until next Kordle" or "다음 단어까지 (hh:mm:ss)"
-		if game is unfinished (0 < tries < 6) and the day passes, count it as a lost game
-
 	Tooltip support / full keyboard support / random typing support
 	Additional support to unfortunate individiuals whose shift keys don't work lol
 	---
-	add small animation of blank box bouncing effect when a character is input
-
-	save system (save every valid Enter input)
-
-	add font credits and stuff when making a readme or smth
-
 	Design window icons
 
 	make a readme for whatever idk stuff (im stuff)
+		- add font credits and stuff when making a readme or smth
+
+	fix the memory problem somehow (idk what's happening nor why it's happening)
+
+	rewrite help popup so it's easier to understand
+
+	fix light mode color scheme
 
 Misc notes
 	Figure out whether or not to hardcode the answers

@@ -3,8 +3,9 @@
 extern char lang;
 extern bool isDarkMode;
 
-Controls::Controls(Graphics* g) {
-	reset(g);
+Controls::Controls(Graphics* g, bool debugMode) {
+	initialized = false;
+	reset(g, debugMode);
 }
 
 Controls::~Controls() {
@@ -15,11 +16,11 @@ Controls::~Controls() {
 	}
 }
 
-void Controls::reset(Graphics* g) {
+void Controls::reset(Graphics* g, bool debugMode) {
 	_n = 3;
 	int x[] = { 220, 220, 220 };
 	int y[] = { 60, 105, 150 };
-	bool side[] = { true, true, false };
+	bool side[] = { isDarkMode, (lang == 'u'), debugMode};
 
 	if (isDarkMode) {
 		bgColor = 18;
@@ -31,6 +32,11 @@ void Controls::reset(Graphics* g) {
 	}
 
 	drawTextures(g, x, y, side);
+
+	if (!initialized) {
+		initialized = true;
+		printf("Switch sprites initialized\n");
+	}
 }
 
 void Controls::drawTextures(Graphics* g, int* _x, int* _y, bool* side) {
@@ -113,14 +119,18 @@ void Controls::drawTextures(Graphics* g, int* _x, int* _y, bool* side) {
 	SDL_SetTextureBlendMode(switchHeadTexture, SDL_BLENDMODE_BLEND);
 
 	SDL_SetRenderTarget(g->_renderer, NULL);
-
-	switches = new Switch[_n];
+	if (!initialized) {
+		switches = new Switch[_n];
+	}
 
 	// draw switches
+	printf("Drawing switches\n");
 	for (int n = _n; n > 0; n--) {
-		switches[n - 1]._side = side[n - 1];
-		switches[n - 1].dstRect.x = _x[n - 1];
-		switches[n - 1].dstRect.y = _y[n - 1];
+		if (!initialized) {
+			switches[n - 1]._side = side[n - 1];
+			switches[n - 1].dstRect.x = _x[n - 1] + 25;
+			switches[n - 1].dstRect.y = _y[n - 1] + 150;
+		}
 		switches[n - 1].dstRect.w = 50;
 		switches[n - 1].dstRect.h = 20;
 		switches[n - 1].aniFrame = 0;
@@ -159,7 +169,22 @@ int Controls::detectSwitch(int* pos) {
 	return -1;
 }
 
-void Controls::drawSwitch(Graphics* g) {
+void Controls::updateSwitch(int n) {
+	switches[n]._side = !switches[n]._side;
+	if (switches[n].aniFrame) {
+		switches[n].aniFrame = (15 - switches[n].aniFrame) * -1;
+	}
+	else {
+		if (switches[n]._side) {
+			switches[n].aniFrame = 1;
+		}
+		else {
+			switches[n].aniFrame = -1;
+		}
+	}
+}
+
+void Controls::drawSwitch(Graphics* g, int popFrames) {
 	for (int i = 0; i < _n; i++) {
 		if (abs(switches[i].aniFrame) > 15) {
 			switches[i].aniFrame = 0;
@@ -176,20 +201,31 @@ void Controls::drawSwitch(Graphics* g) {
 		// move 19 pixels in 15 (FPS / 4) frames
 		if (switches[i].aniFrame > 0) {
 			// going right
-			targetX = 10  + (int)((float)19 / 15 * switches[i].aniFrame );
+			targetX = 10 + (int)((float)19 / 15 * switches[i].aniFrame );
+			switches[i].aniFrame++;
 		}
 		else {
 			// going left
-			targetX = 29  - (int)((float)19 / 15 * switches[i].aniFrame );
+			targetX = 29 + (int)((float)19 / 15 * switches[i].aniFrame );
+			switches[i].aniFrame--;
 		}
 		SDL_QueryTexture(switchHeadTexture, NULL, NULL, &tmpRect.w, &tmpRect.h);
+		tmpRect.y = 5;
+		tmpRect.x = targetX;
 
+		SDL_RenderCopy(g->_renderer, switchHeadTexture, NULL, &tmpRect);
+	}
+
+	SDL_SetRenderTarget(g->_renderer, NULL);
+	for (int i = 0; i < _n; i++) {
+		SDL_SetTextureAlphaMod(switches[i]._texture, 255 * (10 - popFrames) / 10);
+		SDL_RenderCopy(g->_renderer, switches[i]._texture, NULL, &switches[i].dstRect);
 	}
 }
 
 // duplicate of the same function in Popup because im lazy
 bool Controls::isMouseInRect(int* pos, SDL_Rect* rect) {
-	return (rect->w + rect->x - pos[0] > 0) && (rect->h + rect->y - pos[1] > 0) && (rect->x - pos[0] < 0) && (rect->y - pos[1] < 0);
+	return (rect->w + rect->x - 25 - pos[0] > 0) && (rect->h + rect->y - 150 - pos[1] > 0) && (rect->x - 25 - pos[0] < 0) && (rect->y - 150 - pos[1] < 0);
 }
 
 Switch::Switch() {

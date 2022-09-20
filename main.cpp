@@ -27,9 +27,6 @@ extern bool isDarkMode;
 // windows	: INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 
 int main(int argc, char** argv) {
-	ShowWindow(GetConsoleWindow(), SHOW_OPENWINDOW);
-	//printf("%d\n", time(NULL) / 86400);
-	// 
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 	TTF_Init();
 
@@ -37,8 +34,8 @@ int main(int argc, char** argv) {
 	Graphics* g = new Graphics(s);
 	Font* f = new Font(g);
 	Input* i = new Input();
-	Kordle* k = new Kordle(g, f);
-	Popup* p = new Popup(g);
+	Kordle* k = new Kordle(g, f, s);
+	Popup* p = new Popup(g, s);
 
 	SDL_Event _event;
 
@@ -56,6 +53,15 @@ int main(int argc, char** argv) {
 		k->delayedPopup = 201;
 		k->popupDelayFrames = 0;
 	}
+
+	if (s->debugMode) {
+		ShowWindow(GetConsoleWindow(), SW_NORMAL);
+		SDL_RaiseWindow(g->_window);
+	}
+	else {
+		ShowWindow(GetConsoleWindow(), SW_HIDE);
+	}
+
 	while (gameStatus) {
 		frameStartTime = SDL_GetTicks();
 		while (SDL_PollEvent(&_event)) {
@@ -77,6 +83,7 @@ int main(int argc, char** argv) {
 					// game
 					handle = i->detectButton(mousePos, 0, g->getMenuRects());
 				}
+				printf("Mouse button (%d)\n", handle);
 				switch (handle / 100) {
 				case 0:
 					if (gameStatus != 1) break;
@@ -114,18 +121,22 @@ int main(int argc, char** argv) {
 							isDarkMode = false;
 						else
 							isDarkMode = true;
+						printf("Dark mode switch triggered (%d)\n", isDarkMode);
 						redraw(s, g, f, i, k, p);
 						s->saveSettings();
 						k->saveData();
+						p->_controls->updateSwitch(handle - 10);
 						break;
 					case 11:
 						if (lang == 'k')
 							lang = 'u';
 						else
 							lang = 'k';
+						printf("Language switch changed (%c)\n", lang);
 						redraw(s, g, f, i, k, p);
 						s->saveSettings();
 						k->saveData();
+						p->_controls->updateSwitch(handle - 10);
 						break;
 					case 12:
 						if (s->debugMode) {
@@ -137,8 +148,10 @@ int main(int argc, char** argv) {
 							SDL_RaiseWindow(g->_window);
 							s->debugMode = true;
 						}
+						printf("Debug mode triggered (%d)\n", s->debugMode);
 						s->saveSettings();
 						k->saveData();
+						p->_controls->updateSwitch(handle - 10);
 						break;
 					}
 					break;
@@ -164,10 +177,12 @@ int main(int argc, char** argv) {
 				case 0:
 					if (gameStatus != 1) break;
 					if (handle > -1) {
+						SDL_FreeCursor(_cursor);
 						_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
 						SDL_SetCursor(_cursor);
 					}
 					else {
+						SDL_FreeCursor(_cursor);
 						_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 						SDL_SetCursor(_cursor);
 					}
@@ -177,6 +192,7 @@ int main(int argc, char** argv) {
 				// key stuff
 			case SDL_KEYDOWN:
 				key = i->handleKey(_event.key.keysym.sym, (SDL_Keymod)_event.key.keysym.mod);
+				printf("Key press (%d)\n", key);
 				if (key == -1) {
 
 				}
@@ -234,9 +250,14 @@ int main(int argc, char** argv) {
 
 		// Rendering
 		SDL_RenderClear(g->_renderer);
+		const char* errorMsg = SDL_GetError();
+		if (strcmp(errorMsg, "\0") == 0) {
+			printf("%s\n", errorMsg);
+			SDL_ClearError();
+		}
 		g->renderScreen(f->getTitleTexture(), s);
 		k->renderGame(f, g);
-		p->renderPopup(g);
+		p->renderPopup(g, f);
 		SDL_RenderPresent(g->_renderer);
 
 		// FPS limiting
@@ -271,7 +292,7 @@ SDL_HitTestResult hitTest(SDL_Window* win, const SDL_Point* area, void* data) {
 void redraw(Settings* s, Graphics* g, Font* f, Input* i, Kordle* k, Popup* p) {
 	g->reset(s);
 	f->reset(g);
-	p->_controls->reset(g);
+	p->_controls->reset(g, s->debugMode);
 	p->reset();			// color
 	p->reset2(g, f, k); // popup
 	k->reset(f, g->_renderer);

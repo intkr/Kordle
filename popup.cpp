@@ -3,7 +3,7 @@
 extern char lang;
 extern bool isDarkMode;
 
-Popup::Popup(Graphics* g) {
+Popup::Popup(Graphics* g, Settings* s) {
 	bigPopTexture = smallPopTexture = tmpTexture = NULL;
 	tmpSurface = NULL;
 	smallPopFrames = openedBigPop = 0;
@@ -11,10 +11,10 @@ Popup::Popup(Graphics* g) {
 	tmpRect.x = tmpRect.y = tmpRect.w = tmpRect.h = 0;
 	// tmpRect should be initialized everytime you use it
 
-	_controls = new Controls(g);
+	_controls = new Controls(g, s->debugMode);
 
 	reset();
-	_controls->reset(g);
+	_controls->reset(g, s->debugMode);
 }
 
 Popup::~Popup() {
@@ -28,11 +28,11 @@ Popup::~Popup() {
 void Popup::reset() {
 	if (isDarkMode) {
 		smallPopColor = 255;
-		bigPopColor = 18;
+		bigPopColor = 27;
 	}
 	else {
 		smallPopColor = 0;
-		bigPopColor = 255;
+		bigPopColor = 240;
 	}
 }
 
@@ -76,7 +76,7 @@ void Popup::renderUTF8(Graphics* g, Font* f, int x, int y, const char* text) {
 	SDL_DestroyTexture(tmpTexture);
 }
 
-void Popup::renderPopup(Graphics* g) {
+void Popup::renderPopup(Graphics* g, Font* f) {
 	if (smallPopFrames > 0) {
 		if (popAniFrames == -1) {
 			popAniFrames = 10;
@@ -124,9 +124,6 @@ void Popup::renderPopup(Graphics* g) {
 			}
 		}
 
-		if (openedBigPop == 202) {
-			_controls->drawSwitch(g);
-		}
 
 		SDL_RenderFillRect(g->_renderer, NULL);
 		SDL_QueryTexture(bigPopTexture, NULL, NULL, &(tmpRect.w), &(tmpRect.h));
@@ -134,11 +131,21 @@ void Popup::renderPopup(Graphics* g) {
 		tmpRect.y = (650  - tmpRect.h) / 2;
 		tmpRect.x = (400  - tmpRect.w) / 2;
 		SDL_RenderCopy(g->_renderer, bigPopTexture, NULL, &tmpRect);
+
+		switch (openedBigPop) {
+		case 202:
+			_controls->drawSwitch(g, popAniFrames);
+			break;
+		case 200:
+			drawTimer(g, f);
+			break;
+		}
 	}
 }
 
 void Popup::drawPopup(Graphics* g, Font* f, Kordle* k, int code) {
 	if (!code) return; // if no popup just return
+	printf("Popup triggered (%d)\n", code);
 	if (code < 200) {
 		// small popup
 		drawSmallPopup(g, f, code - 100);
@@ -229,7 +236,7 @@ void Popup::drawBigPopup(Graphics* g, Font* f, Kordle* k, int code) {
 		f->setTextFontSize(20);
 		const char *text2[6] = { "Stats\0", "Played\0", "Win %\0", "Current Streak\0", "  Max Streak\0", "Record\0"};
 		char text3[] = "placeholder\0"; // used for numbers
-		Uint16 text4[6][6] = { {53685, 44228, 0,}, {54540, 47112, 51060, 0}, {49849, 47456, 0}, {54788, 51116, 32, 50672, 49849, 0}, {52572, 45796, 32, 50672, 49849, 0}, {44592, 47197, 0} };
+		Uint16 text4[6][6] = { {53685, 44228, 0,}, {54540, 47112, 51060, 0}, {49849, 47456, 32, 37, 0}, {54788, 51116, 32, 50672, 49849, 0}, {52572, 45796, 32, 50672, 49849, 0}, {44592, 47197, 0} };
 		if (lang == 'k') {
 			tmpSurface = TTF_RenderUNICODE_Blended(f->getTextFont(), text4[0], *(f->getColor(3)));
 			tmpTexture = SDL_CreateTextureFromSurface(g->_renderer, tmpSurface);
@@ -262,7 +269,7 @@ void Popup::drawBigPopup(Graphics* g, Font* f, Kordle* k, int code) {
 		}
 		
 		// center on 84 + 65n
-		f->setTextFontSize(12);
+		f->setTextFontSize(13);
 		for (int i = 1; i <= 4; i++) {
 			if (lang == 'k') {
 				tmpSurface = TTF_RenderUNICODE_Blended(f->getTextFont(), text4[i], *(f->getColor(3)));
@@ -270,7 +277,7 @@ void Popup::drawBigPopup(Graphics* g, Font* f, Kordle* k, int code) {
 				SDL_FreeSurface(tmpSurface);
 			}
 			else {
-				tmpSurface = TTF_RenderUTF8_Blended_Wrapped(f->getTextFont(), text2[i], *(f->getColor(3)), 45 );
+				tmpSurface = TTF_RenderUTF8_Blended_Wrapped(f->getTextFont(), text2[i], *(f->getColor(3)), 51 );
 				tmpTexture = SDL_CreateTextureFromSurface(g->_renderer, tmpSurface);
 				SDL_FreeSurface(tmpSurface);
 			}
@@ -502,17 +509,39 @@ void Popup::drawBigPopup(Graphics* g, Font* f, Kordle* k, int code) {
 		renderUTF8(g, f, 191, 152, "Off");
 		renderUTF8(g, f, 275, 152, "On");
 
-		renderUTF8(g, f, 185, 197, "intkr@khu.ac.kr"); // email reveal!!!
+		renderUTF8(g, f, 185, 197, "intkr@khu.ac.kr"); // email reveal omg!!!
 		
-		// switch test
-		for (int i = 0; i < 3; i++) {
-			SDL_RenderCopy(g->_renderer, _controls->switches[i]._texture, NULL, &_controls->switches[i].dstRect);
-		}
 	}
 	break;
 	}
 	f->setTextFontSize(-1);
 	SDL_SetRenderTarget(g->_renderer, NULL);
+}
+
+void Popup::drawTimer(Graphics* g, Font* f) {
+	long kstTime = time(NULL) + 9 * 60 * 60;
+	int secondsLeft = ((int)floor((double)kstTime / 86400) + 1) * 86400 - kstTime;
+	char timerText[9];
+	snprintf(timerText, sizeof(timerText), "%02d:%02d:%02d", secondsLeft / 3600, (secondsLeft % 3600) / 60, secondsLeft % 60);
+
+	// why is there a memory leak??
+	if (lang == 'k') {
+		Uint16 krTimer[17] = { 45796, 51020, 32, 45800, 50612, 44620, 51648, 32, };
+		for (int i = 0; i < sizeof(timerText) - 1; i++) {
+			if (timerText[i] == ':') {
+				krTimer[i + 8] = 58;
+			}
+			else {
+				krTimer[i + 8] = atoi((const char *)timerText[i]) + 48;
+			}
+		}
+		renderUNICODE(g, f, 25 + 20, 125 + 315, krTimer);
+	}
+	else {
+		char engTimer[21] = { "Time until \0" };
+		strcat_s(engTimer, timerText);
+		renderUTF8(g, f, 25 + 20, 150 + 315, engTimer);
+	}
 }
 
 void Popup::closeBigPopup() {
@@ -522,6 +551,7 @@ void Popup::closeBigPopup() {
 }
 
 void Popup::updateSwitch(int n) {
+	printf("Switch (%d)\n", n);
 	bool* switchSide = &_controls->switches[n]._side;
 	int* switchFrame = &_controls->switches[n].aniFrame;
 	*switchSide = !*switchSide;

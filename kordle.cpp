@@ -3,7 +3,7 @@
 extern char lang;
 extern bool isDarkMode;
 
-Kordle::Kordle(Graphics* g, Font* f) {
+Kordle::Kordle(Graphics* g, Font* f, Settings* s) {
 	popupDelayFrames = 0;
 	delayedPopup = 0;
 	rk = -1;
@@ -39,6 +39,7 @@ Kordle::Kordle(Graphics* g, Font* f) {
 		}
 	}
 	else {
+		printf("Data save file didn't load properly");
 		// continue as initial tmp values if error occurs
 	}
 	wreader.close();
@@ -69,11 +70,31 @@ Kordle::Kordle(Graphics* g, Font* f) {
 
 	wreader.open("assets/answer.csv", std::wifstream::in);
 	bool flag = false;
+	int newDay = 0;
 	if (wreader.good()) {
 		// skip previous answers
 
 		//(signed int)time(NULL) / 86400 - releaseDateUNIX - 1
-		for (int i = 0; i <= (signed int)time(NULL) / 86400 - releaseDateUNIX - 1; i++) {
+		if (s->lastDay) {
+			printf("Last day was %d, ", s->lastDay - releaseDateUNIX);
+		}
+		else {
+			printf("First time playing, ");
+		}
+
+		// reset input if time(NULL) / 86400 > s->lastDay, and add a loss on saveData
+		// don't do above if s->lastDay is 0, because that means today is the first day
+		if (s->lastDay == 0) {
+			newDay = 2; // first day
+		}
+		else if (s->lastDay < time(NULL) / 86400) {
+			newDay = 1; // new day
+		}
+		printf("today is Day %d (%d)\n", (signed int)time(NULL) / 86400 - releaseDateUNIX, newDay);
+
+		s->lastDay = (signed int)time(NULL) / 86400;
+		s->saveSettings();
+		for (int i = 0; i <= s->lastDay - releaseDateUNIX - 1; i++) {
 			std::getline(wreader, wline);
 		}
 		// actual line containing today's answer
@@ -125,33 +146,57 @@ Kordle::Kordle(Graphics* g, Font* f) {
 
 	setAnswerData();
 
-	for (int i = 0; i < 6; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (tmp[10 + i * 3 + j] == 0) continue;
-			tmp[10 + i * 3 + j] -= 44032;
-			_input[i][j].jamo[0] = tmp[10 + i * 3 + j] / 588;
-			_input[i][j].jamo[1] = (tmp[10 + i * 3 + j] % 588) / 28;
-			_input[i][j].jamo[2] = tmp[10 + i * 3 + j] % 28;
+	switch (newDay) {
+	case 2: // first (new) day
+		// nothing to do for now
+		break;
+	case 1: // new day
+		// if 0 < tries < 6, game ended prematurely; count as loss
+		// either case of losing / winning on last turn (previous day) leads to saveData (loss / win), so don't have to update data in this case
+		if (tries > 0 && tries < 6) {
+			updatePlayerData(2);
 		}
-	}
-
-	if (tries > 0) {
-		unsigned int tmpTries = tries;
-		for (unsigned int i = 0; i < tmpTries; i++) {
-			tries = i;
-			checkAnswer();
-			//_input[i][0].aniFrame = 1;
+		break;
+	case 0: // same day
+		for (int i = 0; i < 6; i++) {
 			for (int j = 0; j < 3; j++) {
-				for (int k = 0; k < 3; k++) {
-					_input[i][j].color[k] = tmpColor[j][k];
-				}
+				if (tmp[10 + i * 3 + j] == 0) continue;
+				tmp[10 + i * 3 + j] -= 44032;
+				_input[i][j].jamo[0] = tmp[10 + i * 3 + j] / 588;
+				_input[i][j].jamo[1] = (tmp[10 + i * 3 + j] % 588) / 28;
+				_input[i][j].jamo[2] = tmp[10 + i * 3 + j] % 28;
 			}
-			setAnswerData();
 		}
-		tries = tmpTries;
-		reset(f, g->_renderer);
-	}
 
+		if (tries > 0) {
+			unsigned int tmpTries = tries;
+			for (unsigned int i = 0; i < tmpTries; i++) {
+				tries = i;
+				checkAnswer();
+				//_input[i][0].aniFrame = 1;
+				for (int j = 0; j < 3; j++) {
+					for (int k = 0; k < 3; k++) {
+						_input[i][j].color[k] = tmpColor[j][k];
+					}
+				}
+				setAnswerData();
+			}
+			tries = tmpTries;
+			reset(f, g->_renderer);
+			checkAnswerFound();
+		}
+
+		if (foundAnswer) {
+			isTypable = false;
+			popupDelayFrames = 0;
+			delayedPopup = 200;
+		}
+		break;
+	default:
+		// shouldn't happen
+		break;
+	}
+	
 	wreader.close();
 }
 
@@ -184,10 +229,14 @@ void Kordle::saveData() {
 			writer.write("\n\0", strlen("\n\0"));
 		}
 	}
+	else {
+		printf("Data save file didn't save properly");
+	}
 	writer.close();
 }
 
 void Kordle::updatePlayerData(int n) {
+	printf("Data updated (%d)\n", n);
 	switch (n) {
 	case 0: // lost
 		playedGames++;
@@ -206,10 +255,17 @@ void Kordle::updatePlayerData(int n) {
 	case -1: // tried
 		tries++;
 		break;
+	case 2: // lost yesterday (only for new day)
+		playedGames++;
+		currentStreak = 0;
+		winrate = (int)((float)totalWon / playedGames * 100);
+		tries = 0;
+		break;
 	default:
 		// shouldn't happen
 		break;
 	}
+	saveData();
 }
 
 unsigned int Kordle::getPlayerData(int n) {
@@ -743,7 +799,7 @@ void Kordle::checkAnswer() {
 }
 
 // Checks if answer is correct.
-// Controls the value of answerFound accordingly.
+// Controls the value of foundAnswer accordingly.
 void Kordle::checkAnswerFound() {
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -752,6 +808,7 @@ void Kordle::checkAnswerFound() {
 			}
 		}
 	}
+	printf("Correct answer");
 	foundAnswer = true;
 }
 
@@ -872,7 +929,7 @@ void Kordle::renderGame(Font* f, Graphics* g) {
 			for (int k = 0; k < 3; k++) {
 				boxRect.y = (100 + i * 70);
 				data[2] = k;
-				renderBox(g->_renderer, &boxRect, g->getBoxSprites(), data);
+				renderBox(f, g->_renderer, &boxRect, g->getBoxSprites(), data);
 			}
 
 			boxRect.y = (100 + i * 70);
@@ -887,7 +944,7 @@ void Kordle::renderGame(Font* f, Graphics* g) {
 	}
 }
 
-void Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture** box, short* data) {
+void Kordle::renderBox(Font* f, SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture** box, short* data) {
 	int i = data[0], j = data[1], k = data[2];
 	dstRect->w = dstRect->h = 60;
 	short currentFrame = _input[i][j].aniFrame;
@@ -914,9 +971,11 @@ void Kordle::renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture**
 			if (currentFrame == boxBounceFrames + boxWaitFrames) { // end of animation
 				_input[i][j].aniFrame = -1;
 				if (j == 2) {
+					printf("Triggering popup and resetting text textures");
 					updatePlayerData(1);
 					popupDelayFrames = 60;
 					delayedPopup = 200;
+					reset(f, _renderer);
 				}
 			}
 		}

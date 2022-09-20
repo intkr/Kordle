@@ -17,9 +17,9 @@ public:
 	int menuAnimationNo;
 	int popupAnimationNo;
 	bool debugMode;
+	int lastDay;
 private:
 	int fps;
 	int iconSize;
 	bool openMenu;
-	int lastDay;
 };

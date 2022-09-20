@@ -10,10 +10,10 @@
 
 class Popup {
 public:
-	Popup(Graphics* g);
+	Popup(Graphics* g, Settings* s);
 	~Popup();
 	void drawPopup(Graphics* g, Font* f, Kordle* k, int code);
-	void renderPopup(Graphics* g);
+	void renderPopup(Graphics* g, Font* f);
 	void closeBigPopup();
 	void reset();
 	void reset2(Graphics* g, Font* f, Kordle* k);
@@ -33,6 +33,8 @@ private:
 	void renderBigText(Graphics* g, Font* f, int x, int y, int unicode);
 	void renderUNICODE(Graphics* g, Font* f, int x, int y, Uint16* text);
 	void renderUTF8(Graphics* g, Font* f, int x, int y, const char* text);
+
+	void drawTimer(Graphics* g, Font* f);
 	
 	// check if it's -1. if so, popup was just triggered; set it to 10
 	// for each frame after, decrease it steadily until it reaches 0

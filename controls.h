@@ -19,12 +19,13 @@ public:
 
 class Controls {
 public:
-	Controls(Graphics* g);
+	Controls(Graphics* g, bool debugMode);
 	~Controls();
 	
-	void reset(Graphics* g);
+	void reset(Graphics* g, bool debugMode);
 	int detectSwitch(int* pos);
-	void drawSwitch(Graphics* g);
+	void drawSwitch(Graphics* g, int popFrames);
+	void updateSwitch(int n);
 
 	Switch* switches;
 	SDL_Texture* switchBodyTexture;
@@ -34,8 +35,10 @@ private:
 	void drawTextures(Graphics* g, int* _x, int* _y, bool* side);
 	bool isMouseInRect(int* pos, SDL_Rect* rect);
 
+
 	SDL_Rect tmpRect;
 	Uint8 bgColor;
 	Uint8 bodyColor;
 	int _n; // number of buttons
+	bool initialized;
 };

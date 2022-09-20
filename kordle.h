@@ -21,9 +21,9 @@ public:
 
 class Kordle {
 public:
-	Kordle(Graphics* g, Font* f);
+	Kordle(Graphics* g, Font* f, Settings* s);
 	~Kordle();
-	void renderBox(SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture** box, short* data);
+	void renderBox(Font* f, SDL_Renderer* _renderer, SDL_Rect* dstRect, SDL_Texture** box, short* data);
 	void renderText(SDL_Texture* _texture, SDL_Renderer* _renderer, Font* f, SDL_Rect* dstRect, short* data, short* data2);
 	void renderGame(Font* f, Graphics* g);
 	void drawText(Font* f, SDL_Renderer* _renderer, int type);
@@ -79,5 +79,5 @@ private:
 	const int boxWaitFrames = 20;
 	const int boxBounceFrames = 40; // 30 frames of waiting + 30 frames of animation
 
-	const int releaseDateUNIX = 19219;
+	const int releaseDateUNIX = 19255;
 };

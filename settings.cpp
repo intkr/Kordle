@@ -15,6 +15,9 @@ Settings::Settings() {
 			stuff[i] = atoi(line.c_str());
 		}
 	}
+	else {
+		printf("Settings save file didn't load properly");
+	}
 	fps = stuff[0];
 	iconSize = stuff[1];
 	lang = stuff[2];
@@ -44,6 +47,10 @@ void Settings::saveSettings() {
 			writer.write("\n\0", strlen("\n\0"));
 		}
 		
+	}
+	else {
+		// statement below may not be true
+		printf("Settings save file didn't save properly");
 	}
 }
 
